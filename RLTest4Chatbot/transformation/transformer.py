@@ -53,7 +53,7 @@ class CharInsert(Transformer):
         self.valid_rate = CHAR_INSERT_N_TRANS
 
     def sample(self, sentence):
-        n_chars = round(len(nltk.word_tokenize(sentence)) * VALID_RATE)
+        n_chars = round(len(nltk.word_tokenize(sentence)))
         return np.round(
             np.random.uniform(0,1, (self.vector_size * n_chars)), 4
         )
@@ -105,7 +105,6 @@ class CharDrop(Transformer):
         self.upper_bound = self.get_upper_bound()
         self.n_trans = CHAR_DROP_N_TRANS
         self.valid_rate = CHAR_DROP_VALID
-
 
     def sample(self, sentence):
         n_chars = round(len(nltk.word_tokenize(sentence)) * VALID_RATE)

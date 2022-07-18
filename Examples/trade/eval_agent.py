@@ -3,15 +3,15 @@ from Examples.trade.interface4trade import TradeInterface
 from RLTest4Chatbot.agents.multi_pdqn import MultiPDQN
 from RLTest4Chatbot.environments.dialogue_simulator import DialogueSimulator
 from RLTest4Chatbot.evaluate_tester import ChatbotTester
-from Examples.trade.constants import TRADE_COR_TEST_MultiWoz22, TRADE_COR_TEST_MultiWoz21
+from Examples.trade.constants import TRADE_TEST_21, TRADE_TEST_22
 
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--top-k', default = 2, type=int)
 parser.add_argument('--save_dir', default="Examples/trade/Results/", help='Output directory.', type=str)
 parser.add_argument('--interface', default = TradeInterface)
-parser.add_argument('--test-data-file', default = TRADE_COR_TEST_MultiWoz22, type=str) 
-parser.add_argument('--agent_name', default="Multi_PDQN", help="Prefix of output files", type=str)
+parser.add_argument('--test-data-file', default = TRADE_TEST_21, type=str) 
+parser.add_argument('--agent_name', default="Multi_PDQN", type=str)
 
      
 args = parser.parse_args()

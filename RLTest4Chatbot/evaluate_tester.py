@@ -3,9 +3,7 @@ import os
 from tqdm import tqdm
 import numpy as np
 import json
-from RLTest4Chatbot.environments.dialogue_simulator import DialogueSimulator
-from RLTest4Chatbot.agents.multi_pdqn import MultiPDQN
-from Examples.trade.interface4trade import TradeInterface
+from RLTest4Chatbot.transformation.helpers import calculate_modif_rate
 
 class ChatbotTester:
     def __init__(self, environement, agent,  save_dir,top_k, data_file, title):
@@ -44,13 +42,16 @@ class ChatbotTester:
                 new_transcript, new_dst = self.env.apply(action)
                 state, reward, terminal, _ = self.env.step(action)
                 total_reward += reward
+                d_actions, _ = action
                 to_save["ground_truth"] = dialogue["dialogue"][turn_idx]["turn_label"]
                 to_save["turn_idx"] = turn_idx
                 to_save["pred"] = new_dst
                 to_save["transcript_tran"] =new_transcript
+                to_save["transformation_rate"] = calculate_modif_rate(transcript, new_transcript)
+                to_save["d_actions"] = d_actions
                 to_save_dialog["dialogue"].append(to_save)
-
-            to_save_dialog["toral_reward"] = total_reward
+                
+            to_save_dialog["total_reward"] = total_reward
             result.append(to_save_dialog)
         
         with open(os.path.join(self.save_dir, "Evaluation", self.save_file), "w") as f:

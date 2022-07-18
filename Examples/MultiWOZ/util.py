@@ -1,15 +1,17 @@
-from RLTest4Chatbot.environments.utils.constants import TRANSFORMATIONS
-from pyparsing import actions
-from RLTest4Chatbot.transformation.transformer import CharInsert
 import json
 import random
 import os
+import torch
 from xlwt import Workbook
+from RLTest4Chatbot.environments.utils.constants import TRANSFORMATIONS
+from RLTest4Chatbot.transformation.transformer import CharInsert
 from Examples.trade.trade_dst.utils.utils_multiWOZ_DST import Dataset
 from Examples.MultiWOZ.constants import SLOT_MAPS
 from RLTest4Chatbot.transformation.transformer import WordDrop, WordInsert, WordReplace, CharDrop, CharInsert, CharReplace
 from RLTest4Chatbot.constants import MULTIWOZ_21_PATH
 from RLTest4Chatbot.transformation.helpers import calculate_modif_rate
+from Examples.trade.constants import TRADE_COR_DEV_MultiWoz21, TRADE_COR_DEV_MultiWoz22, TRADE_COR_TEST_MultiWoz21, TRADE_COR_TEST_MultiWoz22, TRADE_DATA
+from Examples.simpletod.constants import S_TOD_COR_DEV_MultiWoz21, S_TOD_COR_TEST_MultiWoz21, S_TOD_COR_DEV_MultiWoz22, S_TOD_COR_TEST_MultiWoz22, S_TOD_DATA
 
 ACTIONS = [CharInsert(), CharDrop(), CharReplace(), WordInsert(), WordDrop(), WordReplace()]
 TRANSFORMATIONS = ["Char Insert", "Char Drop", "Char Replace", "Word Insert", "Word Drop", "Word Replace"]
@@ -163,12 +165,6 @@ def generate_consensus_file(data_file , save_file, size):
             sheet.write(row, col+2, modif_rate)
     wb.save('consensus.xls')
 
-    
-
-
-        # self.compound_transfomer = CompoundTransformer(TRANSFORMATIONS)
-        # self.ACTIONS = self.compound_transfomer.get_actions()
-
 def get_correct_data(data_file, model_interface, save_dir):
     _, data, _ = build_dict(data_file)
     correct_data = []
@@ -231,13 +227,37 @@ def get_prediction_stats(predictions):
         joint_acc += pred["joint_acc"]
     return joint_acc/n_preds
 
+def create_data(dev_data_file, test_data_file, save_dir, test_rate):
+    # we have to assert that the two files are from the same data version
+    dev_data_version = test_data_file.split("/")[-1].split(".")[0][-2:]
+    test_data_version = dev_data_file.split("/")[-1].split(".")[0][-2:]
+    assert dev_data_version == test_data_version
+
+    _, dev_data, _ = build_dict(dev_data_file)
+    _, test_data, _ = build_dict(test_data_file)
+    all_data = []
+    all_data.extend(dev_data)
+    all_data.extend(test_data)
+
+    len_test = round(len(all_data) * test_rate)
+    len_train = len(all_data) - len_test
+    train_set, test_set = torch.utils.data.random_split(all_data, [len_train, len_test])
+    train_set, test_set = list(train_set), list(test_set)
+
+    s_test_data_file = "test_" + dev_data_version + ".json"
+    s_train_data_file = "train_" + dev_data_version + ".json"
+
+    with open(os.path.join(save_dir, s_test_data_file), "w") as f:
+        json.dump(test_set, f, indent=4)
+
+    with open(os.path.join(save_dir, s_train_data_file), "w") as f:
+        json.dump(train_set, f, indent=4)
+
 
 def get_test_stats():
     pass
     
 
 
-# print(generate_seed_turns("/home/altaf/Desktop/RLTest4chatbot/Examples/MultiWOZ/data/MultiWOZ_2.1/test_dials.json" , 3))
-# generate_consensus_file("/home/altaf/Desktop/RLTest4chatbot/Examples/MultiWOZ/data/MultiWOZ_2.1/test_dials.json" , "save_file", 100)
 
 

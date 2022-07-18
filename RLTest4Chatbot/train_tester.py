@@ -52,7 +52,6 @@ class RL_Trainer():
                     action_store = [ac_[2*i+1] for i in range(len(ac_)//2)]
                     action_store = [np.argmax(action_store)]
                     action_store.extend(p_)
-
                     self.agent.step(state, action_store, reward, next_state, n_action_store, terminal)
                     state = next_state
                     episode_reward += reward
