@@ -1,12 +1,9 @@
 
-from Examples.trade.interface4trade import TradeInterface
-import argparse
 import os
 import time
 import numpy as np
 from tqdm import tqdm
-from RLTest4Chatbot.environments.dialogue_simulator import DialogueSimulator
-from RLTest4Chatbot.agents.multi_pdqn import MultiPDQN
+
 
 
 class RL_Trainer():
@@ -29,9 +26,7 @@ class RL_Trainer():
         returns = []
         start_time = time.time()
         for i in tqdm(range(self.episodes)):
-            state = self.env.reset()
-            state = np.array(state, dtype=np.float32, copy=False) 
-            state = self.env.reset()
+            state, _ = self.env.reset()
             state = np.array(state, dtype=np.float32, copy=False)
             action = self.agent.act(state)
             episode_reward = 0.
@@ -52,6 +47,7 @@ class RL_Trainer():
                     action_store = [ac_[2*i+1] for i in range(len(ac_)//2)]
                     action_store = [np.argmax(action_store)]
                     action_store.extend(p_)
+
                     self.agent.step(state, action_store, reward, next_state, n_action_store, terminal)
                     state = next_state
                     episode_reward += reward
@@ -73,8 +69,7 @@ class RL_Trainer():
         self.agent.load_models(os.path.join(self.save_dir, "Models", self.model_prefix))
         returns = []
         for i in tqdm(range(self.eval_episodes)):
-            state = self.env.reset()
-            print(i)
+            state, _ = self.env.reset()
             terminal = False
             total_reward = 0.
             while not terminal:

@@ -14,17 +14,18 @@ assert TEST_VES == TRAIN_VES
 parser = argparse.ArgumentParser()
 parser.add_argument('--top-k', default = 2, type=int)
 parser.add_argument('--evaluation_episodes', default=3, help='Episodes over which to evaluate after training.', type=int)
-parser.add_argument('--episodes', default=3, help='Number of epsiodes.', type=int) 
+parser.add_argument('--episodes', default=2, help='Number of epsiodes.', type=int) 
 parser.add_argument('--save_dir', default="Examples/trade/Results/", help='Output directory.', type=str)
 parser.add_argument('--interface', default = TradeInterface)
 parser.add_argument('--train-data-file', default = TARDE_TRAIN_21, type=str) 
 parser.add_argument('--test-data-file', default = TRADE_TEST_21, type=str) 
-parser.add_argument('--agent_name', default="Multi_PDQN", help="Prefix of output files", type=str)
+parser.add_argument('--agent_name', default="Multi_PDQN", type=str)
+parser.add_argument('--cumulative', default= True, type=bool)
 
      
 args = parser.parse_args()
 
-env = DialogueSimulator(args.train_data_file, args.interface)
+env = DialogueSimulator(args.train_data_file, args.interface, args.cumulative)
 agent = MultiPDQN(env.observation_space.spaces[0], env.action_space, args.top_k)
 trainer = RL_Trainer(env, agent, args.save_dir, args.episodes, args.evaluation_episodes, args.top_k, args.agent_name)
 trainer.train()

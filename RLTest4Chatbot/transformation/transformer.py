@@ -620,10 +620,3 @@ def apply(sentence,  trans_name, transformations):
         sentence = trans.apply(sentence)
     return sentence
 
-
-if __name__ == '__main__':
-    char__drop = CharDrop()
-    sentence = "hello you guys you kniw that i love you lore than I love nothing"
-    params = char__drop.sample(sentence)
-    print(params)
-    print(char__drop.apply(sentence, params))
