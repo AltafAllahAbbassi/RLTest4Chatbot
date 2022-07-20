@@ -8,10 +8,8 @@ from RLTest4Chatbot.transformation.transformer import CharInsert
 from Examples.trade.trade_dst.utils.utils_multiWOZ_DST import Dataset
 from Examples.MultiWOZ.constants import SLOT_MAPS
 from RLTest4Chatbot.transformation.transformer import WordDrop, WordInsert, WordReplace, CharDrop, CharInsert, CharReplace
-from RLTest4Chatbot.constants import MULTIWOZ_21_PATH
 from RLTest4Chatbot.transformation.helpers import calculate_modif_rate
-from Examples.trade.constants import TRADE_COR_DEV_MultiWoz21, TRADE_COR_DEV_MultiWoz22, TRADE_COR_TEST_MultiWoz21, TRADE_COR_TEST_MultiWoz22, TRADE_DATA
-from Examples.simpletod.constants import S_TOD_COR_DEV_MultiWoz21, S_TOD_COR_TEST_MultiWoz21, S_TOD_COR_DEV_MultiWoz22, S_TOD_COR_TEST_MultiWoz22, S_TOD_DATA
+from RLTest4Chatbot.environments.utils.constants import VALID_RATE, MAX_WORDS
 
 ACTIONS = [CharInsert(), CharDrop(), CharReplace(), WordInsert(), WordDrop(), WordReplace()]
 TRANSFORMATIONS = ["Char Insert", "Char Drop", "Char Replace", "Word Insert", "Word Drop", "Word Replace"]
@@ -93,7 +91,7 @@ class MultiWozDataLoader(Dataset):
         return domain_slot_value_maps
 
     def __len__(self):
-        """
+        """ 
         Returns the length of the data file
         """
         return len(self.data)
@@ -141,6 +139,8 @@ def generate_consensus_file(data_file , save_file, size):
     """
     This file serves to determine the valid rates of each of our transformations
     """
+    max_trans  = round(VALID_RATE * MAX_WORDS)
+    print(max_trans)
     wb = Workbook()
     turns = generate_seed_turns(data_file, size)
     for i in range(len(ACTIONS)):
@@ -151,18 +151,22 @@ def generate_consensus_file(data_file , save_file, size):
         row = 0
         sheet.write(row, col, "Transcript")
         sheet.write(row, col+1, "New Transcript")
-        sheet.write(row, col+2, "Modification Rate")
-
-        for j in range(len(turns)):
-            row = row+1
-            col = 0
-            transcript = turns[j]["transcript"]
-            params = action.sample(transcript)
-            new_transcript = action.apply(transcript, params)
-            modif_rate = calculate_modif_rate(transcript, new_transcript)
-            sheet.write(row, col, transcript)
-            sheet.write(row, col+1, new_transcript)
-            sheet.write(row, col+2, modif_rate)
+        sheet.write(row, col+2, "Number of transformations")
+        sheet.write(row, col+3, "Modification Rate")
+        
+        for t in range(1, max_trans+1):
+            t =  t
+            for j in range(len(turns)):
+                row = row+1
+                col = 0
+                transcript = turns[j]["transcript"]
+                params = action.sample_(transcript, t)
+                new_transcript = action.apply(transcript, params)
+                modif_rate = calculate_modif_rate(transcript, new_transcript)
+                sheet.write(row, col, transcript)
+                sheet.write(row, col+1, new_transcript)
+                sheet.write(row, col+2, t)
+                sheet.write(row, col+3, modif_rate)
     wb.save('consensus.xls')
 
 def get_correct_data(data_file, model_interface, save_dir):
@@ -261,3 +265,4 @@ def get_test_stats():
 
 
 
+generate_consensus_file("Examples/trade/data/dev_dials_21.json", " ", 10)

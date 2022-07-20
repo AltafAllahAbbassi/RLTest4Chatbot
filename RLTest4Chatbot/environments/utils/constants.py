@@ -17,7 +17,7 @@ NOT HERE, PLEASE CHANGE THE PLACE
 """
 MAX_N_TURNS = 22. # 18 : test_dials, 22 : train dials, 17 dev dials 
 MAX_N_DIALOGUES = 8425. #999 : test_dials, 999 : dev dials, 8424 : train dials
-MAX_WORDS = 33 # max words in a turn in the data set 
+MAX_WORDS = 40 # max words in a turn in the data set 
 
 
 #Observation space lower and upper bound 

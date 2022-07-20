@@ -38,8 +38,7 @@ class ChatbotTester:
                 state = np.array(self.env.state, dtype=np.float32, copy=False)
                 to_save["transcript"] = transcript
                 action = self.agent.act(state)
-                new_transcript, new_dst = self.env.apply(action)
-                state, reward, terminal, _ = self.env.step(action)
+                new_transcript, new_dst, reward, _, _, _ = self.env.apply(action)
                 total_reward += reward
                 d_actions, _ = action
                 to_save["ground_truth"] = dialogue["dialogue"][turn_idx]["turn_label"]

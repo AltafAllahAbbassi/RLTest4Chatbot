@@ -2,7 +2,7 @@ import uuid
 
 
 ENVIRONMENT = 'cpu'
-PROJECT_PATH = '/home/altaf/Desktop/RLTest4chatbot/'
+PROJECT_PATH = './'
 FRAMEWORK_PATH = PROJECT_PATH +"RLTest4Chatbot/"
 BASELINE_PATH = PROJECT_PATH + "DialTest/"
 
