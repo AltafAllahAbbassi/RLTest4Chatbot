@@ -176,9 +176,17 @@ CHAR_REPLACE_MAX_TRANS= 7
 Vector sizes for each transformation
 """
 WORD_INSERT_VECTOR_SIZE = 3
-WORD_DROP_VECTOR_SIZE = 1
+WORD_DROP_VECTOR_SIZE = 2 ## aded other transformations
 WORD_REPLACE_VECTOR_SIZE = 3
 CHAR_INSERT_VECTOR_SIZE = 3
 CHAR_DROP_VECTOR_SIZE = 3 
 CHAR_REPLACE_VECTOR_SIZE = 3
 
+x = 5
+try :
+    assert type(x) == str
+except : 
+    print("no assertion")
+    x = str(x)
+    x = str(x)
+    assert type(x) == str

@@ -257,12 +257,6 @@ def create_data(dev_data_file, test_data_file, save_dir, test_rate):
     with open(os.path.join(save_dir, s_train_data_file), "w") as f:
         json.dump(train_set, f, indent=4)
 
-
 def get_test_stats():
     pass
     
-
-
-
-
-generate_consensus_file("Examples/trade/data/dev_dials_21.json", " ", 10)

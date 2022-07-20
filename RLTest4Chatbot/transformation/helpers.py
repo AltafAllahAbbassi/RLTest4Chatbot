@@ -175,6 +175,8 @@ def calculate_modif_rate(sentence, sentence_): # word swap is not fully explored
         return 1
     shared = set(words).intersection(words_)
     n_shared = len(shared)
+    union = set(words).union(words_)
+    n_union = len(union)
     # res1 = [w for w in words if w in shared]
     # res2 = [w for w in words_ if w in shared]
 
@@ -183,7 +185,8 @@ def calculate_modif_rate(sentence, sentence_): # word swap is not fully explored
     #         n_shared = n_shared-1
     
     # return 1 - n_shared/len(words)
-    return 1- n_shared/max(len(words), len(words_))
+    # return 1- n_shared/max(len(words), len(words_))
+    return n_shared/n_union
 
 
 

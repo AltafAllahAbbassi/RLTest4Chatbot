@@ -52,19 +52,19 @@ class DialTest():
                     n_trans < self.max_trans
                     ):
                     new_transcript = apply(new_transcript, self.trans_name, self.transfromations)
-                    new_gini = self.model_interface.gini_query(dialogue_, turn_idx, new_transcript)
+                    dst_gini = self.model_interface.dst_gini_query(dialogue_, turn_idx, new_transcript)
+                    new_gini = dst_gini["Gini"]
                     n_trans = n_trans + 1
                 if self.cumulative:
                     dialogue_["dialogue"][turn_idx]["transcript"] = new_transcript
                 execution_time = time.time() - start
-                pred = self.model_interface.dst_query(dialogue, turn_idx, new_transcript)
                 to_save["dialogue_idx"] = dialogue_idx
                 to_save["turn_idx"] = turn_idx
                 to_save["ori_transcript"] = ori_transcript
                 to_save["new_transcript"] = new_transcript
                 to_save["n_trans"] = n_trans
                 to_save["exec_time"] = execution_time
-                to_save["joint_acc"] =pred['Joint Acc']
+                to_save["joint_acc"] =dst_gini['Joint Acc']
                 results.append(to_save)
 
         with open(os.path.join(self.save_dir, save_file), "w") as f:
@@ -79,5 +79,4 @@ class DialTest():
             joint_acc += res["joint_acc"]
         return joint_acc/n_res
 
-        
         

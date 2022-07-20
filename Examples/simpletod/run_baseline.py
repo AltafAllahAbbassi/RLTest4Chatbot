@@ -1,13 +1,13 @@
 import argparse
 from Examples.simpletod.interface4simpletod import SimpleTodInterface
 from RLTest4Chatbot.baseline import DialTest
-from RLTest4Chatbot.constants import MULTIWOZ_21_PATH, MULTIWOZ_22_PATH
+from Examples.simpletod.constants import S_TOD_TEST_21, S_TOD_TEST_22 
 
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--model_interface', default = SimpleTodInterface)
 parser.add_argument('--threashold', default = 0.05, type=float)
-parser.add_argument('--data-file', default = MULTIWOZ_21_PATH +"test_dials.json", type=str) 
+parser.add_argument('--data-file', default = S_TOD_TEST_21, type=str) 
 parser.add_argument('--max_trans', default=10, type=int)
 parser.add_argument('--cumulative', default = False, type=bool)
 parser.add_argument('--save_dir', default="Examples/simpletod/Results/baseline/", type=str)

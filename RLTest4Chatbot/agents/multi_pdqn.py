@@ -29,7 +29,7 @@ class MultiPDQN(PDQNAgent):
                  replay_memory_size=10000,
                  learning_rate_actor=0.0001,
                  learning_rate_actor_param=0.0001,
-                 initial_memory_threshold=0,
+                 initial_memory_threshold= 50,
                  use_ornstein_noise=False,
                  loss_func=F.mse_loss,
                  clip_grad=10,

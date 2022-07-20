@@ -29,7 +29,7 @@ BT_BODY = [{"text": ''}]
 
 # Full Form to contracted form https://en.wikipedia.org/wiki/Contraction_(grammar)#English
 FULL_FORM2CONTRACTED_FORM = {
-    " not ": "n't ",  # I can not => I cann't
+    " not ": "n't ",  
     "let us": "let's",
     "I am":	"I'm",
     " are": "'re",

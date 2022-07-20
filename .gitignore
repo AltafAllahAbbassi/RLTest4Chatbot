@@ -42,7 +42,7 @@ pydevd*.log
 nodeLanguageServer/**
 nodeLanguageServer.*/**
 dist/**
-# translation files
+
 *.xlf
 *.nls.*.json
 *.i18n.json
@@ -64,6 +64,5 @@ Examples/trade/Results/Models/
 Examples/trade/trade_dst/baseline/
 Examples/trade/trade_dst/data/
 
-consensus.xls
-.~lock.consensus.xls#
+
 RLTest4Chatbot.egg-info

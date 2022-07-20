@@ -12,9 +12,9 @@ TRAIN_VES = TARDE_TRAIN_21.split("/")[-1].split(".")[0][-2:]
 assert TEST_VES == TRAIN_VES
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--top-k', default = 3, type=int)
+parser.add_argument('--top-k', default = 6, type=int)
 parser.add_argument('--evaluation_episodes', default=1, help='Episodes over which to evaluate after training.', type=int)
-parser.add_argument('--episodes', default=1, help='Number of epsiodes.', type=int) 
+parser.add_argument('--episodes', default=3, help='Number of epsiodes.', type=int) 
 parser.add_argument('--save_dir', default="Examples/trade/Results/", help='Output directory.', type=str)
 parser.add_argument('--interface', default = TradeInterface)
 parser.add_argument('--train-data-file', default = TARDE_TRAIN_21, type=str) 
@@ -24,6 +24,13 @@ parser.add_argument('--cumulative', default= True, type=bool)
 
      
 args = parser.parse_args()
+## add top-k assertion
+top_k = args.top_k
+try : 
+    assert top_k> 0 and top_k <=6 
+except : 
+    print("Top-k actions out of range")
+    exit()
 
 env = DialogueSimulator(args.train_data_file, args.interface, args.cumulative)
 agent = MultiPDQN(env.observation_space.spaces[0], env.action_space, args.top_k)
