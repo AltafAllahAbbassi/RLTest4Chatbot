@@ -20,11 +20,12 @@ parser.add_argument('--train-data-file', default = S_TOD_TRAIN_21, type=str)
 parser.add_argument('--test-data-file', default = S_TOD_TEST_21, type=str) 
 parser.add_argument('--agent_name', default="Multi_PDQN", help="Prefix of output files", type=str)
 parser.add_argument('--cumulative', default=False, type=bool)
+parser.add_argument('--hybrid', default=True, type=bool)
 
      
 args = parser.parse_args()
 
-env = DialogueSimulator(args.train_data_file, args.interface, args.cumulative)
+env = DialogueSimulator(args.train_data_file, args.interface, args.hybrid, args.cumulative)
 agent = MultiPDQN(env.observation_space.spaces[0], env.action_space, args.top_k)
 trainer = RL_Trainer(env, agent, args.save_dir, args.episodes, args.evaluation_episodes, args.top_k, args.agent_name)
 trainer.train()

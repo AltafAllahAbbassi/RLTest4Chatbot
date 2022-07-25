@@ -20,7 +20,8 @@ parser.add_argument('--interface', default = TradeInterface)
 parser.add_argument('--train-data-file', default = TARDE_TRAIN_21, type=str) 
 parser.add_argument('--test-data-file', default = TRADE_TEST_21, type=str) 
 parser.add_argument('--agent_name', default="Multi_PDQN", type=str)
-parser.add_argument('--cumulative', default= True, type=bool)
+parser.add_argument('--cumulative', default= False, type=bool)
+parser.add_argument('--hybrid', default= True, type=bool)
 
      
 args = parser.parse_args()
@@ -33,7 +34,7 @@ except :
     print("Top-k actions out of range")
     exit()
 
-env = DialogueSimulator(args.train_data_file, args.interface, args.cumulative)
+env = DialogueSimulator(args.train_data_file, args.interface,args.hybrid, args.cumulative)
 agent = MultiPDQN(env.observation_space.spaces[0], env.action_space, args.top_k)
 trainer = RL_Trainer(env, agent, args.save_dir, args.episodes, args.evaluation_episodes, args.top_k, args.agent_name)
 trainer.train()

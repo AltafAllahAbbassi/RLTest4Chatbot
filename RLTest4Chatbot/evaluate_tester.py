@@ -39,14 +39,14 @@ class ChatbotTester:
                 state = np.array(self.env.state, dtype=np.float32, copy=False)
                 to_save["transcript"] = transcript
                 action = self.agent.act(state)
-                new_transcript, new_dst, reward, terminal,joint_acc, _, _ = self.env.apply(action)
+                new_transcript, new_dst, reward, terminal,joint_acc,trans_rate, _, _ = self.env.apply(action)
                 total_reward += reward
                 d_actions, p_actions = action
                 to_save["ground_truth"] = dialogue["dialogue"][turn_idx]["belief_state"]
                 to_save["turn_idx"] = turn_idx
                 to_save["pred"] = new_dst
                 to_save["transcript_tran"] =new_transcript
-                to_save["transformation_rate"] = calculate_modif_rate(transcript, new_transcript)
+                to_save["transformation_rate"] = trans_rate
                 to_save["d_action"] = d_actions
                 to_save["p_action"] = list(p_actions)
                 to_save["joint_acc"] =joint_acc

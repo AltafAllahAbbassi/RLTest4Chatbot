@@ -11,7 +11,7 @@ class DialogueSimulator(Environment):
     """
     Dialogue Simulator with parametric actions
     """
-    def __init__(self, data_file, model_interface, cumulative =  False):
+    def __init__(self, data_file, model_interface, hyrbid = True,  cumulative =  False):
         super().__init__()
         self.DIALOG_POS = DIALOG_POS
         self.TURN_POS = TURN_POS
@@ -19,7 +19,11 @@ class DialogueSimulator(Environment):
         self.observation_shape = (self.STATE_ELEMENTS,)
         self.compound_transfomer = CompoundTransformer(TRANSFORMATIONS)
         self.ACTIONS = self.compound_transfomer.get_actions()
-        self.cumulative = cumulative
+        self.hybrid = hyrbid
+        if self.hybrid:
+            self.cumulative = False
+        else : 
+            self.cumulative = cumulative
 
         self.interface = model_interface()
         self.data_file = data_file
@@ -82,21 +86,21 @@ class DialogueSimulator(Environment):
             self.state[self.TURN_POS] += 1
         return self.state
     
-    def reward_func(self, ori_gini, new_gini, ori_transcript, new_transcript):
+    def reward_func(self, ori_gini, new_gini, ori_transcript, new_transcript, trans_rate):
         diff_gini = abs(new_gini-ori_gini)
-        modification_rate = calculate_modif_rate(ori_transcript, new_transcript)
-        beta = modification_rate if modification_rate<0.25 else -10
-        reward = diff_gini/modification_rate + beta if modification_rate else diff_gini
+        # modification_rate = calculate_modif_rate(ori_transcript, new_transcript)
+        beta = trans_rate if trans_rate<0.25 else -10
+        reward = diff_gini/trans_rate + beta if trans_rate else diff_gini
         return reward
 
-    def calculate_reward(self, new_transcript, ori_transcript):  
+    def calculate_reward(self, new_transcript, ori_transcript, trans_rate):  
         turn_idx = self.state[self.TURN_POS]
         ori_gini = self.interface.gini_query(
             self.dialogue, turn_idx, ori_transcript)
         new_gini = self.interface.gini_query(
             self.dialogue, turn_idx, new_transcript)
     
-        reward = self.reward_func(ori_gini, new_gini, ori_transcript, new_transcript)
+        reward = self.reward_func(ori_gini, new_gini, ori_transcript, new_transcript, trans_rate)
         return reward
 
     def set_state(self, dialog_id : str):
@@ -117,17 +121,17 @@ class DialogueSimulator(Environment):
         action = (actions, all_params)
         turn_idx = int(self.state[self.TURN_POS])
         transcript = self.dialogue["dialogue"][turn_idx]["transcript"]
-        # except :
-        #     print("turn_idx",  turn_idx)
-        #     print("index", d_index)
-        #     print("dialog index", dialog_index)
         transcript = self.dialogue["dialogue"][turn_idx]["transcript"]
-        new_transcript = self.compound_transfomer.apply(transcript, action)
-        # print(new_transcript)
-        if self.cumulative :
+        new_transcript, trans_rate = self.compound_transfomer.apply(transcript, action)
+
+        if self.hybrid:
+            save = random.randint(0,1)
+            if save :
+                self.dialogue["dialogue"][turn_idx]["transcript"] = new_transcript
+            
+        elif self.cumulative :
             self.dialogue["dialogue"][turn_idx]["transcript"] = new_transcript
-            # print(self.dialogue["dialogue"][turn_idx]["transcript"])
-        reward = self.calculate_reward(new_transcript, transcript)
+        reward = self.calculate_reward(new_transcript, transcript, trans_rate)
 
         done = self.is_done()
         n_state = self.next_state()
@@ -141,12 +145,9 @@ class DialogueSimulator(Environment):
 
         action = (actions, all_params)
         turn_idx = int(self.state[self.TURN_POS])
-        # d_index = self.state[self.DIALOG_POS]
-        # dialog_index = self.dialogues[d_index]
-        # dialogue = self.data_maps[dialog_index]
         ori_transcript = self.dialogue["dialogue"][turn_idx]["transcript"]
         ori_gini = self.interface.gini_query(self.dialogue, turn_idx, ori_transcript)
-        new_transcript = self.compound_transfomer.apply(ori_transcript, action)
+        new_transcript, trans_rate = self.compound_transfomer.apply(ori_transcript, action)
         dst_gini = self.interface.dst_gini_query(self.dialogue, turn_idx, new_transcript)
         new_dst = dst_gini["Prediction"]
         joint_acc = dst_gini["Joint Acc"]
@@ -155,4 +156,4 @@ class DialogueSimulator(Environment):
         done = self.is_done()
         n_state = self.next_state()
         info = {}
-        return new_transcript, new_dst, reward, done, joint_acc, n_state, info
+        return new_transcript, new_dst, reward, done, joint_acc,trans_rate, n_state, info

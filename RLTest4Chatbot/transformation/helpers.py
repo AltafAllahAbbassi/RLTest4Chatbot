@@ -245,7 +245,3 @@ def calculate_similarity(sentence1, sentence2):
 
     return S/Xi
 
-
-s1= "could you give me information about a restaurant called panahar?" 
-s2 ="couldymu couldymu give me informataion  a restaurant called panahar"
-print(calculate_similarity(s1,s2))

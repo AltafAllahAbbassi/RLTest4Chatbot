@@ -12,12 +12,12 @@ parser.add_argument('--save_dir', default="Examples/trade/Results/", help='Outpu
 parser.add_argument('--interface', default = TradeInterface)
 parser.add_argument('--test-data-file', default = TRADE_TEST_21, type=str) 
 parser.add_argument('--agent_name', default="Multi_PDQN", type=str)
-parser.add_argument('--cumulative', default= True, type=bool)
-
+parser.add_argument('--cumulative', default= False, type=bool)
+parser.add_argument('--hybrid', default= False, type=bool)
      
 args = parser.parse_args()
 
-env = DialogueSimulator(args.test_data_file, args.interface, args.cumulative)
+env = DialogueSimulator(args.test_data_file, args.interface,args.hybrid,  args.cumulative)
 agent = MultiPDQN(env.observation_space.spaces[0], env.action_space, args.top_k)
 chatbot_tester = ChatbotTester(env, agent, args.save_dir, args.top_k,args.test_data_file, args.agent_name)
 chatbot_tester.test_chatbot()
