@@ -1,6 +1,8 @@
 import nltk
-from nltk.corpus import wordnet
+from nltk.corpus import wordnet 
+import numpy as np
 from RLTest4Chatbot.transformation.constants import WORD_TAG_DICT
+
 
 
 def char_repeat(sentence, char_index):
@@ -186,8 +188,64 @@ def calculate_modif_rate(sentence, sentence_): # word swap is not fully explored
     
     # return 1 - n_shared/len(words)
     # return 1- n_shared/max(len(words), len(words_))
-    return n_shared/n_union
+    return 1- n_shared/n_union
 
 
+alpha = 0.2
+beta  = 0.45
+benchmark_similarity = 0.8025
+gamma = 1.8
+
+from collections import defaultdict
 
 
+def _disambiguate(sentence):
+    wsd =[]
+    words = nltk.word_tokenize(sentence)
+    for word in words : 
+        try :
+            xx = wordnet.synsets(word)[1]
+        except :
+            xx = None
+        wsd.append((word,xx))
+    return wsd
+
+
+def calculate_similarity(sentence1, sentence2):
+    L1 =dict()
+    L2 =defaultdict(list)
+    s1_wsd = _disambiguate(sentence1)
+    s2_wsd = _disambiguate(sentence2)
+    s1 = [syn  for syn in s1_wsd if syn[1]]
+    s2 = [syn  for syn in s2_wsd if syn[1]]
+    for syn1 in s1:
+        L1[syn1[0]] =list()
+        for syn2 in s2:                                     
+            
+            subsumer = syn1[1].lowest_common_hypernyms(syn2[1], simulate_root=True)[0]
+            h =subsumer.max_depth() + 1 # as done on NLTK wordnet        
+            syn1_dist_subsumer = syn1[1].shortest_path_distance(subsumer,simulate_root =True)
+            syn2_dist_subsumer = syn2[1].shortest_path_distance(subsumer,simulate_root =True)
+            l  =syn1_dist_subsumer + syn2_dist_subsumer
+            f1 = np.exp(-alpha*l)
+            a  = np.exp(beta*h)
+            b  = np.exp(-beta*h)
+            f2 = (a-b) /(a+b)
+            sim = f1*f2
+            L1[syn1[0]].append(sim)          
+            L2[syn2[0]].append(sim)
+    V1 =np.array( [max(L1[key]) for key in L1.keys()])
+    V2 = np.array([max(L2[key]) for key in L2.keys()])
+    S  = np.linalg.norm(V1)*np.linalg.norm(V2)
+    C1 = sum(V1>=benchmark_similarity)
+    C2 = sum(V2>=benchmark_similarity)
+    Xi = (C1+C2) / gamma
+    if C1+C2 == 0:
+            Xi = max(V1.size, V2.size) / 2
+
+    return S/Xi
+
+
+s1= "could you give me information about a restaurant called panahar?" 
+s2 ="couldymu couldymu give me informataion  a restaurant called panahar"
+print(calculate_similarity(s1,s2))

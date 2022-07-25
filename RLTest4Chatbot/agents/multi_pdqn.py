@@ -3,7 +3,6 @@ import torch.nn.functional as F
 import numpy as np
 from RLTest4Chatbot.environments.dialogue_simulator import DialogueSimulator
 from RLTest4Chatbot.agents.utils.utils import get_random_actions, get_actions
-import argparse
 from RLTest4Chatbot.agents.pdqn import QActor, ParamActor, PDQNAgent
 
 

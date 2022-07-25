@@ -21,3 +21,4 @@ env = DialogueSimulator(args.test_data_file, args.interface, args.cumulative)
 agent = MultiPDQN(env.observation_space.spaces[0], env.action_space, args.top_k)
 chatbot_tester = ChatbotTester(env, agent, args.save_dir, args.top_k,args.test_data_file, args.agent_name)
 chatbot_tester.test_chatbot()
+ 

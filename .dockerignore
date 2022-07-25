@@ -16,11 +16,12 @@ Examples/simpletod/simpletod/Results/baseline
 
 
 
-RLTest4Chatbot.egg-info
+RLTest4Chatbot.egg-info/
 
 
 
 Examples/simpletod/Results/Evaluation/
 Examples/simpletod/Results/Models/
 
+analysis.ipnyb
 

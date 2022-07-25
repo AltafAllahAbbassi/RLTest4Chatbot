@@ -106,6 +106,7 @@ class TradeInterface(ModelInterface):
         result.update({"context": test.dataset[0]["context_plain"]})
         result["Ground Truth"] = sorted(result["Ground Truth"])
         result["Prediction"] = sorted(result["Prediction"])
+        result["Joint Acc"] = result["Joint Acc"]
 
         data_ = []
         ginis = []
@@ -124,4 +125,5 @@ class TradeInterface(ModelInterface):
 
         result["Gini"] = sum(ginis)/len(ginis)
         return result
+
 

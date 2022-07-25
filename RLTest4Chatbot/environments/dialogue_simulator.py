@@ -85,17 +85,17 @@ class DialogueSimulator(Environment):
     def reward_func(self, ori_gini, new_gini, ori_transcript, new_transcript):
         diff_gini = abs(new_gini-ori_gini)
         modification_rate = calculate_modif_rate(ori_transcript, new_transcript)
-        beta = modification_rate if modification_rate<0.25 else -100
+        beta = modification_rate if modification_rate<0.25 else -10
         reward = diff_gini/modification_rate + beta if modification_rate else diff_gini
         return reward
 
-    def calculate_reward(self, new_transcript):  
+    def calculate_reward(self, new_transcript, ori_transcript):  
         turn_idx = self.state[self.TURN_POS]
-        ori_transcript = self.dialogue["dialogue"][turn_idx]["transcript"]
         ori_gini = self.interface.gini_query(
             self.dialogue, turn_idx, ori_transcript)
         new_gini = self.interface.gini_query(
             self.dialogue, turn_idx, new_transcript)
+    
         reward = self.reward_func(ori_gini, new_gini, ori_transcript, new_transcript)
         return reward
 
@@ -121,12 +121,13 @@ class DialogueSimulator(Environment):
         #     print("turn_idx",  turn_idx)
         #     print("index", d_index)
         #     print("dialog index", dialog_index)
+        transcript = self.dialogue["dialogue"][turn_idx]["transcript"]
         new_transcript = self.compound_transfomer.apply(transcript, action)
         # print(new_transcript)
         if self.cumulative :
             self.dialogue["dialogue"][turn_idx]["transcript"] = new_transcript
             # print(self.dialogue["dialogue"][turn_idx]["transcript"])
-        reward = self.calculate_reward(new_transcript)
+        reward = self.calculate_reward(new_transcript, transcript)
 
         done = self.is_done()
         n_state = self.next_state()
@@ -148,9 +149,10 @@ class DialogueSimulator(Environment):
         new_transcript = self.compound_transfomer.apply(ori_transcript, action)
         dst_gini = self.interface.dst_gini_query(self.dialogue, turn_idx, new_transcript)
         new_dst = dst_gini["Prediction"]
+        joint_acc = dst_gini["Joint Acc"]
         new_gini = dst_gini["Gini"]
         reward = self.reward_func(ori_gini, new_gini, ori_transcript, new_transcript)
         done = self.is_done()
         n_state = self.next_state()
         info = {}
-        return new_transcript, new_dst, reward, done, n_state, info
+        return new_transcript, new_dst, reward, done, joint_acc, n_state, info

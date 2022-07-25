@@ -150,6 +150,7 @@ class SimpleTodInterface(ModelInterface):
 
             result = cal_join_acc(turn_pred=turn_pred, turn_target=turn_target)
             result["context"] = text
+            result["Joint Acc"] = result["Joint Acc"]
         except:
             result = {"Prediction": [],
                       "Ground Truth": dialogue["dialogue"][turn_id]["belief_state"],
