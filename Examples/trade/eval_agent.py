@@ -13,7 +13,7 @@ parser.add_argument('--interface', default = TradeInterface)
 parser.add_argument('--test-data-file', default = TRADE_TEST_21, type=str) 
 parser.add_argument('--agent_name', default="Multi_PDQN", type=str)
 parser.add_argument('--cumulative', default= False, type=bool)
-parser.add_argument('--hybrid', default= False, type=bool)
+parser.add_argument('--hybrid', default= True, type=bool)
      
 args = parser.parse_args()
 

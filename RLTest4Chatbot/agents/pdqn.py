@@ -3,7 +3,6 @@ Source https://github.com/cycraig/MP-DQN/blob/master/agents/pdqn.py
 """
 
 import torch
-from torch import double
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
@@ -14,9 +13,7 @@ from torch.autograd import Variable
 from RLTest4Chatbot.agents.agent import Agent
 from RLTest4Chatbot.agents.utils.memory import Memory
 from RLTest4Chatbot.agents.utils.noise import OrnsteinUhlenbeckActionNoise
-from RLTest4Chatbot.environments.dialogue_simulator import DialogueSimulator
 from RLTest4Chatbot.agents.utils.utils import soft_update_target_network, hard_update_target_network
-import argparse
 
 
 
@@ -392,6 +389,8 @@ class PDQNAgent(Agent):
             pred_next_action_parameters = self.actor_param_target.forward(next_states)
             pred_Q_a = self.actor_target(next_states, pred_next_action_parameters)
             Qprime = torch.max(pred_Q_a, 1, keepdim=True)[0].squeeze()
+
+            
 
             # Compute the TD error
             target = rewards + (1 - terminals) * self.gamma * Qprime

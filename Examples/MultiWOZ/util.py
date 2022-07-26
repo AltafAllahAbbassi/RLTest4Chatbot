@@ -257,6 +257,20 @@ def create_data(dev_data_file, test_data_file, save_dir, test_rate):
     with open(os.path.join(save_dir, s_train_data_file), "w") as f:
         json.dump(train_set, f, indent=4)
 
+def create_seed_data(data_file, seed_size, save_dir):
+    _, data, _ = build_dict(data_file)
+    data1 = data[:seed_size]
+    data2 = data[seed_size:2*seed_size]
+    seed_name = data_file.split("/")[-1].split(".")[0]
+    seed_name1 = seed_name + "_" + str(1)+ ".json"
+    seed_name2 = seed_name + "_" +str(2)+ ".json"
+    with open(os.path.join(save_dir, seed_name1), "w") as f:
+        json.dump(data1, f, indent=4)
+
+    with open(os.path.join(save_dir, seed_name2), "w") as f:
+        json.dump(data2, f, indent=4)
+
 def get_test_stats():
     pass
     
+

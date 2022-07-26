@@ -387,9 +387,9 @@ class WordInsert(Transformer):
         return params
 
     def apply(self, sentence, transformation_vectors):
-        sentence = super().apply(sentence, transformation_vectors)
         words = nltk.word_tokenize(sentence)
-        length_ = len(words)  # n words
+        length_ = len(words)  # n words, original word length
+        sentence = super().apply(sentence, transformation_vectors)
         n_t = 0
         for i in range(len(transformation_vectors)//self.vector_size):
             trans_index = transformation_vectors[i*self.vector_size+1]
@@ -421,9 +421,11 @@ class WordInsert(Transformer):
                     to_insert = words[word_index]
                     sentence = word_insert(sentence, word_index, to_insert)
             if n_t >= self.valid_trans:
-                return sentence, n_t/len(sentence)
+                # return sentence, n_t/length_
+                return sentence, 1-len(sentence)/length_  ## jaccard distance
 
-        return sentence, n_t/ len(sentence)
+        # return sentence, n_t/ length_
+        return sentence, 1-len(sentence)/length_  ## jaccard distance
 
     def get_upper_bound(self):
         return np.array([1]*self.get_vector_size())
@@ -507,9 +509,10 @@ class WordDrop(Transformer):
                     sentence = word_drop(sentence, word_index)
 
             if n_t >= self.valid_trans:
-                return sentence, n_t/length_
+                return sentence, 1-len(sentence)/length_  ## jaccard distance
 
-        return sentence, n_t/length_
+        return sentence, 1-len(sentence)/length_  ## jaccard distance
+
 
     def get_upper_bound(self):
         return np.array([1]*self.get_vector_size())
@@ -637,9 +640,9 @@ class WordReplace(Transformer):
                         union = set(word_l).union(miss_l)
                         trans_rate = (shared)/union/length_
 
-                if (trans_index == 3):  # swap words, not included in transfromatin rate for now 
+                if (trans_index == 3):  # swap words, word swap is considered as two transformations
                     sentence = word_swap(sentence, word_index)
-                    trans_rate = 0
+                    trans_rate = 2/length_
                 
                 trans_rates = trans_rates + trans_rate
                 if n_t >= self.valid_trans:

@@ -26,10 +26,10 @@ class MultiPDQN(PDQNAgent):
                  tau_actor=0.01,
                  tau_actor_param=0.001,
                  replay_memory_size=10000,
-                 learning_rate_actor=0.0001,
+                 learning_rate_actor=0.001,
                  learning_rate_actor_param=0.0001,
                  initial_memory_threshold= 50,
-                 use_ornstein_noise=False,
+                 use_ornstein_noise=True,
                  loss_func=F.mse_loss,
                  clip_grad=10,
                  inverting_gradients=True,
@@ -39,7 +39,7 @@ class MultiPDQN(PDQNAgent):
                  average=False,
                  random_weighted=False,
                  device='cpu',
-                 seed=1):
+                 seed=5):
         super().__init__(observation_space,
                          action_space,
                          actor_class=actor_class,
@@ -77,7 +77,6 @@ class MultiPDQN(PDQNAgent):
             all_action_parameters = self.actor_param.forward(state)
             # Hausknecht and Stone [2016] use epsilon greedy actions with uniform random action-parameter exploration
             rnd = self.np_random.uniform()
-            # if rnd < self.epsilon: # this is the correct form
             if rnd < self.epsilon:
                 actions = get_random_actions(self.num_actions, self.top_k)
                 if not self.use_ornstein_noise:

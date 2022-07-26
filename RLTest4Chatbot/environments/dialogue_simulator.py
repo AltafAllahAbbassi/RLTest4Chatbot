@@ -152,7 +152,7 @@ class DialogueSimulator(Environment):
         new_dst = dst_gini["Prediction"]
         joint_acc = dst_gini["Joint Acc"]
         new_gini = dst_gini["Gini"]
-        reward = self.reward_func(ori_gini, new_gini, ori_transcript, new_transcript)
+        reward = self.reward_func(ori_gini, new_gini, ori_transcript, new_transcript, trans_rate)
         done = self.is_done()
         n_state = self.next_state()
         info = {}

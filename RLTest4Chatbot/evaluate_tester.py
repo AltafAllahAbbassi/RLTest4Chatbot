@@ -19,7 +19,8 @@ class ChatbotTester:
 
     def test_chatbot(self):
         result = []
-        for i  in tqdm(range(len(self.dialogues))):        
+        # for i  in tqdm(range(len(self.dialogues))):    
+        for i  in tqdm(range(10, 12)):    
             index = self.dialogues[i] 
             dialogue = self.data_maps[index]
             to_save_dialog = {"dialog_id": dialogue["dialogue_idx"],
@@ -48,7 +49,8 @@ class ChatbotTester:
                 to_save["transcript_tran"] =new_transcript
                 to_save["transformation_rate"] = trans_rate
                 to_save["d_action"] = d_actions
-                to_save["p_action"] = list(p_actions)
+                p_actions = list(p_actions)
+                to_save["p_action"] = p_actions
                 to_save["joint_acc"] =joint_acc
                 to_save["reward"] = reward
                 to_save_dialog["dialogue"].append(to_save)
@@ -56,6 +58,15 @@ class ChatbotTester:
             to_save_dialog["total_reward"] = total_reward
             result.append(to_save_dialog)
             
-        with open(os.path.join(self.save_dir, "Evaluation", self.save_file), "w") as f:
-                json.dump(result, f, indent=10)
-                
+        with open(os.path.join(self.save_dir, "Evaluation", "_" +self.save_file), "w") as f:
+                json.dump(result, f, indent=10, cls=NpEncoder)
+
+class NpEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        if isinstance(obj, np.floating):
+            return float(obj)
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return json.JSONEncoder.default(self, obj)

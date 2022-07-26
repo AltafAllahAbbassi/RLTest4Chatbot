@@ -25,7 +25,7 @@ def get_random_actions(n_actions, top_k):
 """
 Most of the code is from https://github.com/cycraig/MP-DQN
 """
-def soft_update_target_network(source_network, target_network, tau):
+def  soft_update_target_network(source_network, target_network, tau):
     for target_param, param in zip(target_network.parameters(), source_network.parameters()):
         target_param.data.copy_(tau * param.data + (1.0 - tau) * target_param.data)
 
