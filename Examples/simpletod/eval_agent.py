@@ -14,12 +14,13 @@ parser.add_argument('--test-data-file', default = S_TOD_TEST_21, type=str)
 parser.add_argument('--agent_name', default="Multi_PDQN", type=str)
 parser.add_argument('--cumulative', default= False, type=bool)
 parser.add_argument('--hybrid', default= True, type=bool)
-
+parser.add_argument('--rep', default= 1, type=int)
+parser.add_argument('--train_episodes', default= 1000, type=int)
 
      
 args = parser.parse_args()
 
 env = DialogueSimulator(args.test_data_file, args.interface, args.cumulative)
 agent = MultiPDQN(env.observation_space.spaces[0], env.action_space, args.top_k)
-chatbot_tester = ChatbotTester(env, agent, args.save_dir, args.top_k,args.test_data_file, args.agent_name)
+chatbot_tester = ChatbotTester(env, agent, args.save_dir, args.top_k,args.test_data_file, args.agent_name, args.rep, args.train_episodes)
 chatbot_tester.test_chatbot()

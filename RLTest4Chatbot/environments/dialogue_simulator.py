@@ -2,7 +2,6 @@ from gym import spaces
 from RLTest4Chatbot.environments.environment import Environment
 from RLTest4Chatbot.environments.utils.constants import STATE_ELEMENTS, DIALOG_POS, TURN_POS, MAX_WORDS, VALID_RATE, TRANSFORMATIONS, OBSERVATION_LOWER, OBSERVATION_UPPER
 from RLTest4Chatbot.transformation.transformer import CompoundTransformer
-from RLTest4Chatbot.transformation.helpers import calculate_modif_rate
 from Examples.MultiWOZ.util import build_dict
 import random
 import numpy as np

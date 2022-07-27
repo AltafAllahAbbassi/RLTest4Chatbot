@@ -7,6 +7,7 @@ from RLTest4Chatbot.transformation.constants import WORD_INSERT_VECTOR_SIZE, WOR
 from RLTest4Chatbot.transformation. constants import WORD_DROP_N_TRANS, WORD_INSERT_N_TRANS, WORD_REPLACE_N_TRANS, CHAR_DROP_N_TRANS, CHAR_INSERT_N_TRANS, CHAR_REPLACE_N_TRANS
 from RLTest4Chatbot.transformation.constants import DIACTIRICS, PUNKT, VOWELS, ADJACENT_AZERTY, ADJACENT_QUERTY, EMOTICONS, MISSPELLED_FILE, TOP_N, WORD_TAG_DICT
 from RLTest4Chatbot.transformation.helpers import char_insert, char_replace, get_char, char_repeat, char_drop, char_swap, word_insert, word_piece_insert, word_drop, word_replace, word_swap, get_synonyms, construct_dict_file, get_active_params
+from RLTest4Chatbot.transformation.helpers import modif_rate_sen, jaccard_modif_rate
 import gensim.downloader as api
 import tensorflow.compat.v1 as tf
 import requests
@@ -85,9 +86,9 @@ class CharInsert(Transformer):
             params.extend(self.sample_one(sentence))
         return params
 
-    def apply(self, sentence, transformation_vectors):
+    def apply(self, ori_sentence, transformation_vectors):
 
-        sentence = super().apply(sentence, transformation_vectors)
+        sentence = super().apply(ori_sentence, transformation_vectors)
         length_ = len(sentence)
         n_t = 0
         for i in range(len(transformation_vectors)//self.vector_size):
@@ -114,9 +115,9 @@ class CharInsert(Transformer):
                     punkt = self.punkt[punk_index]
                     sentence = char_insert(sentence, char_index, punkt)
             if n_t >= self.valid_trans:
-                return sentence, n_t/length_ 
+                return sentence, 1-length_/len(sentence)
 
-            return sentence, n_t/length_ 
+            return sentence, 1-length_/len(sentence)
 
     def get_upper_bound(self):
         return np.array([1]*self.get_vector_size())
@@ -165,8 +166,8 @@ class CharDrop(Transformer):
 
         return params
 
-    def apply(self, sentence, transformation_vectors):
-        sentence = super().apply(sentence, transformation_vectors)
+    def apply(self, ori_sentence, transformation_vectors):
+        sentence = super().apply(ori_sentence, transformation_vectors)
         n_t = 0
         length_ = len(sentence)
         for i in range(len(transformation_vectors)//self.vector_size):
@@ -207,9 +208,9 @@ class CharDrop(Transformer):
                     sentence = char_drop(sentence, punkts[punkt_index])
 
             if n_t >= self.valid_trans:
-                return sentence, n_t/length_
+                return sentence, 1 - len(sentence)/length_
 
-        return sentence, n_t/length_
+        return sentence,1 - len(sentence)/length_
 
     def get_upper_bound(self):
         return np.array([1]*self.get_vector_size())
@@ -261,10 +262,10 @@ class CharReplace(Transformer):
 
         return params
 
-    def apply(self, sentence, transformation_vectors):
+    def apply(self, ori_sentence, transformation_vectors):
         n_t = 0
-        length_ = len(sentence)
-        sentence = super().apply(sentence, transformation_vectors)
+        length_ = len(ori_sentence)
+        sentence = super().apply(ori_sentence, transformation_vectors)
         for i in range(len(transformation_vectors)//self.vector_size):
             trans_index = transformation_vectors[i*self.vector_size+1]
             trans_index = round(trans_index*(self.n_trans - 1))
@@ -590,14 +591,9 @@ class WordReplace(Transformer):
                     syn_index = transformation_vectors[i*self.vector_size + 2]
                     syn_index = round(syn_index * (len(synonyms)-1))
                     synonym = synonyms[syn_index]
-                    try :
-                        word_s = wordnet.synsets(word)[0]
-                        synonym_s = wordnet.synsets(synonym)[0]
-                        sim_rate = word_s.wup_similarity(synonym_s)
-                        trans_rate = (1-sim_rate)/length_
-                    except:
-                        trans_rate = 1/length_
+                    ori_sentence = sentence 
                     sentence = word_replace(sentence, word_index, synonym)
+                    trans_rate = modif_rate_sen(ori_sentence, sentence)
 
                 if (trans_index == 1):  # Similar replace
                     try:  # not all words can be in the vocabulary
@@ -610,16 +606,9 @@ class WordReplace(Transformer):
                         similar = similars[sim_index]
                     except:
                         similar = words[word_index]
-
-                    try :
-                        word_s = wordnet.synsets(word)[0]
-                        similar_s = wordnet.synsets(similar)[0]
-                        sim_rate = word_s.wup_similarity(similar_s)
-                        trans_rate = (1-sim_rate)/length_
-
-                    except:
-                        trans_rate = 1/length_
+                    ori_sentence = sentence
                     sentence = word_replace(sentence, word_index, similar)
+                    trans_rate = modif_rate_sen(sentence, ori_sentence)
 
                 if (trans_index == 2):  # replace with misspelled form, we calculate jaccard disatnce between the two words
                     word = words[word_index]
@@ -633,16 +622,12 @@ class WordReplace(Transformer):
                         sentence = word_replace(
                             sentence, word_index, miss_word)
 
-                        """starting of trans rate calulation"""
-                        word_l = list(word)
-                        miss_l = list(miss_word)
-                        shared = set(word_l).intersection(miss_l)
-                        union = set(word_l).union(miss_l)
-                        trans_rate = (shared)/union/length_
+                        trans_rate = jaccard_modif_rate(word, miss_word)
 
                 if (trans_index == 3):  # swap words, word swap is considered as two transformations
+                    ori_sentence = sentence
                     sentence = word_swap(sentence, word_index)
-                    trans_rate = 2/length_
+                    trans_rate = modif_rate_sen(ori_sentence, sentence)
                 
                 trans_rates = trans_rates + trans_rate
                 if n_t >= self.valid_trans:

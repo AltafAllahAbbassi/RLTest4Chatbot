@@ -2,6 +2,8 @@ import nltk
 from nltk.corpus import wordnet 
 import numpy as np
 from RLTest4Chatbot.transformation.constants import WORD_TAG_DICT
+from collections import defaultdict
+
 
 
 
@@ -171,6 +173,9 @@ def get_active_params(params, rate, vector_size):
 
 
 def calculate_modif_rate(sentence, sentence_): # word swap is not fully explored but it is okey
+    """
+    Jaccad distance
+    """
     words = nltk.word_tokenize(sentence)
     words_ =  nltk.word_tokenize(sentence_)
     if len(words_)==0 or len(words) == 0 :
@@ -179,24 +184,20 @@ def calculate_modif_rate(sentence, sentence_): # word swap is not fully explored
     n_shared = len(shared)
     union = set(words).union(words_)
     n_union = len(union)
-    # res1 = [w for w in words if w in shared]
-    # res2 = [w for w in words_ if w in shared]
-
-    # for i in range(len(shared)-1):
-    #     if res1[i]!=res2[i]:
-    #         n_shared = n_shared-1
-    
-    # return 1 - n_shared/len(words)
-    # return 1- n_shared/max(len(words), len(words_))
     return 1- n_shared/n_union
 
+
+
+
+"""
+Most of the code from https://github.com/alvations/pywsd
+Paper : https://arxiv.org/pdf/1802.05667.pdf
+"""
 
 alpha = 0.2
 beta  = 0.45
 benchmark_similarity = 0.8025
 gamma = 1.8
-
-from collections import defaultdict
 
 
 def _disambiguate(sentence):
@@ -211,13 +212,13 @@ def _disambiguate(sentence):
     return wsd
 
 
-def calculate_similarity(sentence1, sentence2):
+def calculate_similarity_sen(sentence1, sentence2):
     L1 =dict()
     L2 =defaultdict(list)
     s1_wsd = _disambiguate(sentence1)
     s2_wsd = _disambiguate(sentence2)
-    s1 = [syn  for syn in s1_wsd if syn[1]]
-    s2 = [syn  for syn in s2_wsd if syn[1]]
+    s1 = [syn  for syn in s1_wsd if syn[1]] # not None
+    s2 = [syn  for syn in s2_wsd if syn[1]] # not None
     for syn1 in s1:
         L1[syn1[0]] =list()
         for syn2 in s2:                                     
@@ -245,3 +246,24 @@ def calculate_similarity(sentence1, sentence2):
 
     return S/Xi
 
+def modif_rate_sen(sentence1, sentence2):
+    try :
+        modif = 1-calculate_similarity_sen(sentence1, sentence2)
+    except : 
+        modif = 0
+    if modif>1:
+        modif =1 
+    elif modif <0:
+        modif = 0
+    return modif
+
+
+def jaccard_modif_rate(word1, word2):
+    word1_l = list(word1)
+    word2_l = list(word2)
+    shared = set(word1_l).intersection(word2_l)
+    union = set(word1_l).union(word2_l)
+
+    return 1-union/shared
+
+    

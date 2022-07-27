@@ -5,7 +5,7 @@ import json
 from RLTest4Chatbot.transformation.helpers import calculate_modif_rate
 
 class ChatbotTester:
-    def __init__(self, environement, agent,  save_dir,top_k, data_file, title):
+    def __init__(self, environement, agent,  save_dir,top_k, data_file, title, rep, train_episodes):
         self.env = environement
         self.agent = agent 
         self.top_k = top_k
@@ -13,7 +13,9 @@ class ChatbotTester:
         self.title = title
         self.save_file = self.data_file.split("/")[-1].split(".")[0] + "_" + self.title + "_" + str(self.top_k) + ".json"
         self.save_dir = save_dir
-        self.model_prefix = str(self.top_k) + "_" + self.title + "_" 
+        self.rep = rep
+        self.train_episodes = train_episodes
+        self.model_prefix = str(self.top_k) + "_" + self.title + "_" + str(self.rep) + "_" + str(self.train_episodes) + "_"
         self.data_maps, self.dialogues = self.env.data_maps, self.env.dialogues
         self.agent.load_models(os.path.join(self.save_dir, "Models", self.model_prefix))
 
@@ -58,7 +60,7 @@ class ChatbotTester:
             to_save_dialog["total_reward"] = total_reward
             result.append(to_save_dialog)
             
-        with open(os.path.join(self.save_dir, "Evaluation", "_" +self.save_file), "w") as f:
+        with open(os.path.join(self.save_dir, "Evaluation", self.save_file), "w") as f:
                 json.dump(result, f, indent=10, cls=NpEncoder)
 
 class NpEncoder(json.JSONEncoder):

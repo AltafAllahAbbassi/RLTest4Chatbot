@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 
 class RL_Trainer():
-    def __init__(self, environement, agent, save_dir, episodes, eval_episodes, top_k, agent_name, seed = 0, display_freq = 100):
+    def __init__(self, environement, agent, save_dir, episodes, eval_episodes, top_k, agent_name, seed = 0, display_freq = 100, rep = 1):
         self.env = environement
         self.agent = agent 
         self.top_k = top_k
@@ -19,7 +19,8 @@ class RL_Trainer():
         self.display_freq = self.episodes//100 +1
         self.save_dir = save_dir
         self.agent_name = agent_name
-        self.model_prefix =  str(self.top_k) + "_" + self.agent_name + "_" 
+        self.rep = rep
+        self.model_prefix =  str(self.top_k) + "_" + self.agent_name + "_" + str(self.rep) + "_" + str(self.episodes) + "_"
 
     def train(self):
         total_reward = 0.
