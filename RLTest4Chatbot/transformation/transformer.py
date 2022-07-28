@@ -7,7 +7,7 @@ from RLTest4Chatbot.transformation.constants import WORD_INSERT_VECTOR_SIZE, WOR
 from RLTest4Chatbot.transformation. constants import WORD_DROP_N_TRANS, WORD_INSERT_N_TRANS, WORD_REPLACE_N_TRANS, CHAR_DROP_N_TRANS, CHAR_INSERT_N_TRANS, CHAR_REPLACE_N_TRANS
 from RLTest4Chatbot.transformation.constants import DIACTIRICS, PUNKT, VOWELS, ADJACENT_AZERTY, ADJACENT_QUERTY, EMOTICONS, MISSPELLED_FILE, TOP_N, WORD_TAG_DICT
 from RLTest4Chatbot.transformation.helpers import char_insert, char_replace, get_char, char_repeat, char_drop, char_swap, word_insert, word_piece_insert, word_drop, word_replace, word_swap, get_synonyms, construct_dict_file, get_active_params
-from RLTest4Chatbot.transformation.helpers import modif_rate_sen, jaccard_modif_rate
+from RLTest4Chatbot.transformation.helpers import modif_rate_sen, jaccard_modif_rate, nltk_modif
 import gensim.downloader as api
 import tensorflow.compat.v1 as tf
 import requests
@@ -115,9 +115,9 @@ class CharInsert(Transformer):
                     punkt = self.punkt[punk_index]
                     sentence = char_insert(sentence, char_index, punkt)
             if n_t >= self.valid_trans:
-                return sentence, 1-length_/len(sentence)
+                return sentence, 1- length_/len(sentence)
 
-            return sentence, 1-length_/len(sentence)
+            return sentence, 1- length_/len(sentence)
 
     def get_upper_bound(self):
         return np.array([1]*self.get_vector_size())
@@ -423,10 +423,10 @@ class WordInsert(Transformer):
                     sentence = word_insert(sentence, word_index, to_insert)
             if n_t >= self.valid_trans:
                 # return sentence, n_t/length_
-                return sentence, 1-len(sentence)/length_  ## jaccard distance
+                return sentence, 1-length_/len(sentence)  ## jaccard distance
 
         # return sentence, n_t/ length_
-        return sentence, 1-len(sentence)/length_  ## jaccard distance
+        return sentence, 1-length_/len(sentence)  ## jaccard distance
 
     def get_upper_bound(self):
         return np.array([1]*self.get_vector_size())
@@ -514,7 +514,6 @@ class WordDrop(Transformer):
 
         return sentence, 1-len(sentence)/length_  ## jaccard distance
 
-
     def get_upper_bound(self):
         return np.array([1]*self.get_vector_size())
 
@@ -569,9 +568,9 @@ class WordReplace(Transformer):
 
     def apply(self, sentence, transformation_vectors):
         n_t = 0
-        trans_rates = 0
         length_ = len(sentence)
         sentence = super().apply(sentence, transformation_vectors)
+        trans_rate = 0
         for i in range(len(transformation_vectors)//self.vector_size):
             words = nltk.word_tokenize(sentence)
             words_tags = nltk.pos_tag(words)
@@ -591,9 +590,8 @@ class WordReplace(Transformer):
                     syn_index = transformation_vectors[i*self.vector_size + 2]
                     syn_index = round(syn_index * (len(synonyms)-1))
                     synonym = synonyms[syn_index]
-                    ori_sentence = sentence 
                     sentence = word_replace(sentence, word_index, synonym)
-                    trans_rate = modif_rate_sen(ori_sentence, sentence)
+                    trans_rate = trans_rate + nltk_modif(word, synonym)/length_
 
                 if (trans_index == 1):  # Similar replace
                     try:  # not all words can be in the vocabulary
@@ -606,9 +604,9 @@ class WordReplace(Transformer):
                         similar = similars[sim_index]
                     except:
                         similar = words[word_index]
-                    ori_sentence = sentence
+                    trans_rate = trans_rate + nltk_modif(word, synonym)/length_
                     sentence = word_replace(sentence, word_index, similar)
-                    trans_rate = modif_rate_sen(sentence, ori_sentence)
+
 
                 if (trans_index == 2):  # replace with misspelled form, we calculate jaccard disatnce between the two words
                     word = words[word_index]
@@ -622,18 +620,16 @@ class WordReplace(Transformer):
                         sentence = word_replace(
                             sentence, word_index, miss_word)
 
-                        trans_rate = jaccard_modif_rate(word, miss_word)
+                        trans_rate = trans_rate + jaccard_modif_rate(word, miss_word)/length_
 
                 if (trans_index == 3):  # swap words, word swap is considered as two transformations
-                    ori_sentence = sentence
                     sentence = word_swap(sentence, word_index)
-                    trans_rate = modif_rate_sen(ori_sentence, sentence)
+                    trans_rate = trans_rate + 2/length_
                 
-                trans_rates = trans_rates + trans_rate
                 if n_t >= self.valid_trans:
-                    return sentence, trans_rates
+                    return sentence, trans_rate
 
-        return sentence, trans_rates
+        return sentence, trans_rate
 
     def get_upper_bound(self):
         return np.array([1]*self.get_vector_size())
@@ -831,3 +827,4 @@ def apply(sentence,  trans_name, transformations):
         trans = transformations[trans_name]
         sentence = trans.apply(sentence)
     return sentence
+

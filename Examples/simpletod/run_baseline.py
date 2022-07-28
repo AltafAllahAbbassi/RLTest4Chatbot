@@ -10,13 +10,11 @@ parser.add_argument('--threashold', default = 0.05, type=float)
 parser.add_argument('--data-file', default = S_TOD_TEST_21, type=str) 
 parser.add_argument('--max_trans', default=10, type=int)
 parser.add_argument('--cumulative', default = False, type=bool)
+parser.add_argument('--hybrid', default = True, type=bool)
+
 parser.add_argument('--save_dir', default="Examples/simpletod/Results/baseline/", type=str)
 parser.add_argument('--trans_name', default="synonym_replace", type=str)
-
- 
-
-     
 args = parser.parse_args()
-baseline = DialTest(args.model_interface, args.threashold,args.data_file, args.max_trans, args.cumulative, args.save_dir, args.trans_name )
+baseline = DialTest(args.model_interface, args.threashold,args.data_file, args.max_trans, args.cumulative,args.hybrid, args.save_dir, args.trans_name, )
 results = baseline.test_chatbot()
 print("Sucess rate = ",  baseline.get_sucess_rate(results))

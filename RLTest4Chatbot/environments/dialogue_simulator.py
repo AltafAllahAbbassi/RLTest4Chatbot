@@ -1,3 +1,4 @@
+import math
 from gym import spaces
 from RLTest4Chatbot.environments.environment import Environment
 from RLTest4Chatbot.environments.utils.constants import STATE_ELEMENTS, DIALOG_POS, TURN_POS, MAX_WORDS, VALID_RATE, TRANSFORMATIONS, OBSERVATION_LOWER, OBSERVATION_UPPER
@@ -86,9 +87,9 @@ class DialogueSimulator(Environment):
         return self.state
     
     def reward_func(self, ori_gini, new_gini, ori_transcript, new_transcript, trans_rate):
-        diff_gini = abs(new_gini-ori_gini)
+        diff_gini = math.exp(abs(new_gini-ori_gini))
         # modification_rate = calculate_modif_rate(ori_transcript, new_transcript)
-        beta = trans_rate if trans_rate<0.25 else -10
+        beta = 0 if trans_rate<0.25 else -100
         reward = diff_gini/trans_rate + beta if trans_rate else diff_gini
         return reward
 

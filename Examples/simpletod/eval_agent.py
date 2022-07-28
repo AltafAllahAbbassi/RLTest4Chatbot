@@ -8,7 +8,7 @@ from Examples.simpletod.constants import S_TOD_TEST_21, S_TOD_TEST_22
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--top-k', default = 2, type=int)
-parser.add_argument('--save_dir', default="Examples/trade/Results/", type=str)
+parser.add_argument('--save_dir', default="Examples/simpletoad/Results/", type=str)
 parser.add_argument('--interface', default = SimpleTodInterface)
 parser.add_argument('--test-data-file', default = S_TOD_TEST_21, type=str) 
 parser.add_argument('--agent_name', default="Multi_PDQN", type=str)

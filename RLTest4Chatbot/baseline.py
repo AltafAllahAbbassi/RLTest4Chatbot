@@ -3,8 +3,10 @@ import copy
 import time
 import os
 import json
+import random
 from  Examples.MultiWOZ.util import build_dict
 from RLTest4Chatbot.transformation.transformer import apply, WwmInsert, BackTranslation, SynonymReplace
+from RLTest4Chatbot.transformation.helpers import modif_rate_sen
 
 
 TRANSFROMATIONS = {
@@ -14,7 +16,7 @@ TRANSFROMATIONS = {
 }
    
 class DialTest():
-    def __init__(self, model_interface, threashold, data_file, max_trans, cumulative, save_dir, trans_name):
+    def __init__(self, model_interface, threashold, data_file, max_trans, cumulative, hybrid, save_dir, trans_name):
         self.model_interface = model_interface()
         self.threashold = threashold
         self.data_file = data_file
@@ -22,6 +24,11 @@ class DialTest():
         self.transfromations = TRANSFROMATIONS
         self.trans_name = trans_name
         self.max_trans = max_trans
+        self.hybrid = hybrid
+        if self.hybrid : 
+            self.cumulative = False
+        else : 
+            self.cumulative = cumulative
         self.cumulative = cumulative
         self.data_maps, self.data, self.keys = build_dict(self.data_file)
         self.save_dir = save_dir
@@ -32,7 +39,8 @@ class DialTest():
     def test_chatbot(self):
         results = []
         save_file = self.trans_name + "_" + str(self.cumulative) + "_" + self.save_file
-        for i in tqdm(range(len(self.data))):
+        # for i in tqdm(range(len(self.data))):
+        for i in tqdm(range(3)):
             dialogue = self.data[i]  #backup clean dialogue
             dialogue_ = copy.deepcopy(dialogue)
             dialogue_idx =  dialogue["dialogue_idx"]
@@ -55,7 +63,13 @@ class DialTest():
                     dst_gini = self.model_interface.dst_gini_query(dialogue_, turn_idx, new_transcript)
                     new_gini = dst_gini["Gini"]
                     n_trans = n_trans + 1
-                if self.cumulative:
+                
+                if self.hybrid : 
+                    save = random.randint(0,1)
+                    if save :
+                        dialogue_["dialogue"][turn_idx]["transcript"] = new_transcript
+
+                elif self.cumulative:
                     dialogue_["dialogue"][turn_idx]["transcript"] = new_transcript
                 execution_time = time.time() - start
                 to_save["dialogue_idx"] = dialogue_idx
@@ -65,6 +79,7 @@ class DialTest():
                 to_save["n_trans"] = n_trans
                 to_save["exec_time"] = execution_time
                 to_save["joint_acc"] =dst_gini['Joint Acc']
+                to_save["modif_rate"] = modif_rate_sen(ori_transcript, new_transcript)
                 results.append(to_save)
 
         with open(os.path.join(self.save_dir, save_file), "w") as f:

@@ -211,7 +211,6 @@ def _disambiguate(sentence):
         wsd.append((word,xx))
     return wsd
 
-
 def calculate_similarity_sen(sentence1, sentence2):
     L1 =dict()
     L2 =defaultdict(list)
@@ -264,6 +263,16 @@ def jaccard_modif_rate(word1, word2):
     shared = set(word1_l).intersection(word2_l)
     union = set(word1_l).union(word2_l)
 
-    return 1-union/shared
+    return 1-len(union)/(shared)
 
+def nltk_modif(word1, word2):
+    try :
+        syn1 = wordnet.synsets(word1)[1]
+        syn2 = wordnet.synsets(word2)[1]
+        sim = wordnet.wup_similarity(syn1, syn2)
+        
+    except :
+        sim = 0
+
+    return 1-sim
     
