@@ -1,9 +1,9 @@
-tensorflow==2.7.0+computecanada
-torch==1.10.0+computecanada
+tensorflow==2.7.0
+torch==1.10.0
 embeddings==0.0.6
-easydict==1.9+computecanada
-gym==0.24.0+computecanada
-transformers==4.20.1+computecanada
-nltk==3.6.3+computecanada
-gensim==4.0.1+computecanada
-xlwt==1.3.0+computecanada
+easydict==1.9
+gym==0.24.0
+transformers==4.20.1
+nltk==3.6.3
+gensim==4.0.1
+xlwt==1.3.0
