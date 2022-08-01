@@ -7,7 +7,9 @@ from RLTest4Chatbot.transformation.constants import WORD_INSERT_VECTOR_SIZE, WOR
 from RLTest4Chatbot.transformation. constants import WORD_DROP_N_TRANS, WORD_INSERT_N_TRANS, WORD_REPLACE_N_TRANS, CHAR_DROP_N_TRANS, CHAR_INSERT_N_TRANS, CHAR_REPLACE_N_TRANS
 from RLTest4Chatbot.transformation.constants import DIACTIRICS, PUNKT, VOWELS, ADJACENT_AZERTY, ADJACENT_QUERTY, EMOTICONS, MISSPELLED_FILE, TOP_N, WORD_TAG_DICT
 from RLTest4Chatbot.transformation.helpers import char_insert, char_replace, get_char, char_repeat, char_drop, char_swap, word_insert, word_piece_insert, word_drop, word_replace, word_swap, get_synonyms, construct_dict_file, get_active_params
-from RLTest4Chatbot.transformation.helpers import modif_rate_sen, jaccard_modif_rate, nltk_modif
+from RLTest4Chatbot.transformation.helpers import jaccard_modif_rate, nltk_modif
+from RLTest4Chatbot.environments.utils.constants import TRANSFORMATIONS
+
 import gensim.downloader as api
 import tensorflow.compat.v1 as tf
 import requests
@@ -96,7 +98,7 @@ class CharInsert(Transformer):
             char_index = round(length_ * char_index)
             if char_index != 0:  # Transformation is active
                 n_t = n_t+1  # number of active transformations
-                
+
                 char_index = char_index-1
                 trans_index = transformation_vectors[i*self.vector_size+1]
                 trans_index = round(trans_index*(self.n_trans - 1))
@@ -115,9 +117,9 @@ class CharInsert(Transformer):
                     punkt = self.punkt[punk_index]
                     sentence = char_insert(sentence, char_index, punkt)
             if n_t >= self.valid_trans:
-                return sentence, 1- length_/len(sentence)
+                return sentence, 1 - length_/len(sentence)
 
-            return sentence, 1- length_/len(sentence)
+            return sentence, 1 - length_/len(sentence)
 
     def get_upper_bound(self):
         return np.array([1]*self.get_vector_size())
@@ -210,7 +212,7 @@ class CharDrop(Transformer):
             if n_t >= self.valid_trans:
                 return sentence, 1 - len(sentence)/length_
 
-        return sentence,1 - len(sentence)/length_
+        return sentence, 1 - len(sentence)/length_
 
     def get_upper_bound(self):
         return np.array([1]*self.get_vector_size())
@@ -259,7 +261,6 @@ class CharReplace(Transformer):
         params = []
         for i in range(n_trans):
             params.extend(self.sample_one(sentence))
-
         return params
 
     def apply(self, ori_sentence, transformation_vectors):
@@ -422,11 +423,11 @@ class WordInsert(Transformer):
                     to_insert = words[word_index]
                     sentence = word_insert(sentence, word_index, to_insert)
             if n_t >= self.valid_trans:
-                # return sentence, n_t/length_
-                return sentence, 1-length_/len(sentence)  ## jaccard distance
+                words = nltk.word_tokenize(sentence)
+                return sentence, 1-length_/len(words)  # jaccard distance
 
-        # return sentence, n_t/ length_
-        return sentence, 1-length_/len(sentence)  ## jaccard distance
+        words = nltk.word_tokenize(sentence)
+        return sentence, 1-length_/len(words)  # jaccard distance
 
     def get_upper_bound(self):
         return np.array([1]*self.get_vector_size())
@@ -476,13 +477,13 @@ class WordDrop(Transformer):
 
     def apply(self, sentence, transformation_vectors):
         n_t = 0
-        length_ = len(sentence)
+        words = nltk.word_tokenize(sentence)
+        length_ = len(words)
         sentence = super().apply(sentence, transformation_vectors)
         for i in range(len(transformation_vectors) // self.vector_size):
             trans_index = transformation_vectors[i*self.vector_size+1]
             trans_index = round(trans_index*(self.n_trans - 1))
             word_index = transformation_vectors[i*self.vector_size]
-
             words = nltk.word_tokenize(sentence)
             if trans_index == 0:  # drop a random word
                 word_index = round(word_index * len(words))
@@ -510,9 +511,11 @@ class WordDrop(Transformer):
                     sentence = word_drop(sentence, word_index)
 
             if n_t >= self.valid_trans:
-                return sentence, 1-len(sentence)/length_  ## jaccard distance
+                words = nltk.word_tokenize(sentence)
+                return sentence, 1-len(sentence)/length_  # jaccard distance
 
-        return sentence, 1-len(sentence)/length_  ## jaccard distance
+        words = nltk.word_tokenize(sentence)
+        return sentence, 1-len(words)/length_  # jaccard distance
 
     def get_upper_bound(self):
         return np.array([1]*self.get_vector_size())
@@ -536,14 +539,12 @@ class WordReplace(Transformer):
         self.punkt = PUNKT
         self.stop_words = stopwords.words('english')
         self.misspelled = construct_dict_file(MISSPELLED_FILE)
-        # Model used in similar replace
         self.model = api.load("glove-wiki-gigaword-100")
         self.top_n = TOP_N
         self.n_trans = WORD_REPLACE_N_TRANS
         self.valid_trans = WORD_REPLACE_MAX_TRANS
 
     def sample(self, sentence):
-        # as a maximum , we can replace all words
         n_words = round(len(nltk.word_tokenize(sentence))*VALID_RATE)
         return np.round(
             np.random.uniform(0, 1, (self.vector_size * n_words)), 4
@@ -568,7 +569,8 @@ class WordReplace(Transformer):
 
     def apply(self, sentence, transformation_vectors):
         n_t = 0
-        length_ = len(sentence)
+        words = nltk.word_tokenize(sentence)
+        length_ = len(words)
         sentence = super().apply(sentence, transformation_vectors)
         trans_rate = 0
         for i in range(len(transformation_vectors)//self.vector_size):
@@ -607,8 +609,8 @@ class WordReplace(Transformer):
                     trans_rate = trans_rate + nltk_modif(word, synonym)/length_
                     sentence = word_replace(sentence, word_index, similar)
 
-
-                if (trans_index == 2):  # replace with misspelled form, we calculate jaccard disatnce between the two words
+                # replace with misspelled form, we calculate jaccard disatnce between the two words
+                if (trans_index == 2):
                     word = words[word_index]
                     if word in list(self.misspelled.keys()):
                         misspelled_list = self.misspelled[word]
@@ -620,12 +622,13 @@ class WordReplace(Transformer):
                         sentence = word_replace(
                             sentence, word_index, miss_word)
 
-                        trans_rate = trans_rate + jaccard_modif_rate(word, miss_word)/length_
+                        trans_rate = trans_rate + \
+                            jaccard_modif_rate(word, miss_word)/length_
 
                 if (trans_index == 3):  # swap words, word swap is considered as two transformations
                     sentence = word_swap(sentence, word_index)
                     trans_rate = trans_rate + 2/length_
-                
+
                 if n_t >= self.valid_trans:
                     return sentence, trans_rate
 
@@ -668,7 +671,6 @@ def build_transformation(transformation_name):
 
 
 class CompoundTransformer(Transformer):
-
     def __init__(self, transformations=[]):
         super().__init__()
         self.transfromation_names = transformations
@@ -691,7 +693,7 @@ class CompoundTransformer(Transformer):
             start_idx = end_idx
 
     def apply(self, sentence, transformation_vectors):
-        cum_trans_rate = 0 
+        cum_trans_rate = 0
         try:
             actions, params = transformation_vectors
             for i in range(self.num_actions):

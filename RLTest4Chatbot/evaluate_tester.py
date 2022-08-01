@@ -11,10 +11,10 @@ class ChatbotTester:
         self.top_k = top_k
         self.data_file = data_file
         self.title = title
-        self.save_file = self.data_file.split("/")[-1].split(".")[0] + "_" + self.title + "_" + str(self.top_k) + ".json"
-        self.save_dir = save_dir
         self.rep = rep
         self.train_episodes = train_episodes
+        self.save_file = self.data_file.split("/")[-1].split(".")[0] + "_" + self.title + "_" + str(self.top_k) + str(self.rep) + "_" + str(self.train_episodes) + ".json"
+        self.save_dir = save_dir
         self.model_prefix = str(self.top_k) + "_" + self.title + "_" + str(self.rep) + "_" + str(self.train_episodes) + "_"
         self.data_maps, self.dialogues = self.env.data_maps, self.env.dialogues
         self.agent.load_models(os.path.join(self.save_dir, "Models", self.model_prefix))
