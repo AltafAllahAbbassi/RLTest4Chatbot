@@ -3,6 +3,8 @@ import os
 import time
 import numpy as np
 from tqdm import tqdm
+import logging
+logging.basicConfig(filename='output.log'  , level=logging.INFO ,format="%(message)s")
 
 
 
@@ -71,6 +73,13 @@ class RL_Trainer():
 
             if i % self.display_freq == 0:
                 print('{0:5s} R:{1:.4f} r:{2:.4f}'.format(str(i), total_reward / (i + 1), np.array(returns[-self.display_freq:]).mean()))
+            
+            if i %10 == 0 and i>0:
+                logging.info("episode", i)
+                logging.info("reward", reward)
+                logging.info("execution time", epi_time)
+                logging.info("epsilon steps", self.agent.epsilon)
+
         end_time = time.time()
         print("Took %.2f seconds" % (end_time - start_time))
         self.env.close()
