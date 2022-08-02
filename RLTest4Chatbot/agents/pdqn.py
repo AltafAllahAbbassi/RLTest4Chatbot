@@ -462,7 +462,7 @@ class PDQNAgent(Agent):
         """
         torch.save(self.actor.state_dict(), prefix + 'actor.pt')
         torch.save(self.actor_param.state_dict(), prefix + 'actor_param.pt')
-        print('Models saved successfully')
+        # print('Models saved successfully')
 
     def load_models(self, prefix):
         """

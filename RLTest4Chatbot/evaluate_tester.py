@@ -1,8 +1,8 @@
 import os
+import time
 from tqdm import tqdm
 import numpy as np
 import json
-from RLTest4Chatbot.transformation.helpers import calculate_modif_rate
 
 class ChatbotTester:
     def __init__(self, environement, agent,  save_dir,top_k, data_file, title, rep, train_episodes):
@@ -21,7 +21,9 @@ class ChatbotTester:
 
     def test_chatbot(self):
         result = []
-        for i  in tqdm(range(len(self.dialogues))):    
+        for i in tqdm(range(3)):
+        # for i  in tqdm(range(len(self.dialogues))):    
+            start_t = time.time()
             index = self.dialogues[i] 
             dialogue = self.data_maps[index]
             to_save_dialog = {"dialog_id": dialogue["dialogue_idx"],
@@ -55,8 +57,9 @@ class ChatbotTester:
                 to_save["joint_acc"] =joint_acc
                 to_save["reward"] = reward
                 to_save_dialog["dialogue"].append(to_save)
-                
+            exec_time = time.time() - start_t   
             to_save_dialog["total_reward"] = total_reward
+            to_save["exec_time"] =exec_time
             result.append(to_save_dialog)
             
         with open(os.path.join(self.save_dir, "Evaluation", self.save_file), "w") as f:

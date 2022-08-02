@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 
 class RL_Trainer():
-    def __init__(self, environement, agent, save_dir, episodes, eval_episodes, top_k, agent_name, seed = 0, display_freq = 10, rep = 1, save_freq = 500):
+    def __init__(self, environement, agent, save_dir, episodes, eval_episodes, top_k, agent_name, seed = 0, display_freq = 5, rep = 1, save_freq = 500):
         self.env = environement
         self.agent = agent 
         self.top_k = top_k
@@ -27,8 +27,10 @@ class RL_Trainer():
         total_reward = 0.
         returns = []
         start_time = time.time()
-        for i in tqdm(range(self.episodes)):
-            if i % self.save_freq == 0:
+        tqdm_bar = tqdm(range(self.episodes))
+        for i in tqdm_bar:
+            start_episode = time.time()
+            if i % self.save_freq == 0 and i != 0:
                 model_prefix = self.model_prefix + str(i) + "_"
                 self.agent.save_models(os.path.join(self.save_dir, "Models", model_prefix))
 
@@ -59,9 +61,13 @@ class RL_Trainer():
                     episode_reward += reward
                     if terminal:
                         break
+            end_episode = time.time()
             self.agent.end_episode()
             returns.append(episode_reward)
             total_reward += episode_reward
+            epi_time = end_episode-start_episode
+
+            tqdm_bar.set_description("Episode: " + str(i) + " reward: " + str(round(episode_reward, 3)) +  " took " + str(round(epi_time,1)) + "seconds" )
 
             if i % self.display_freq == 0:
                 print('{0:5s} R:{1:.4f} r:{2:.4f}'.format(str(i), total_reward / (i + 1), np.array(returns[-self.display_freq:]).mean()))
@@ -69,11 +75,12 @@ class RL_Trainer():
         print("Took %.2f seconds" % (end_time - start_time))
         self.env.close()
         model_prefix = self.model_prefix +  str(self.episodes) + "_"
-        self.agent.save_models(os.path.join(self.save_dir, "Models", self.model_prefix))
+        self.agent.save_models(os.path.join(self.save_dir, "Models", model_prefix))
         print("Average return =", sum(returns) / len(returns))
 
     def evaluate(self): 
-        self.agent.load_models(os.path.join(self.save_dir, "Models", self.model_prefix))
+        model_prefix = self.model_prefix +  str(self.episodes) + "_"
+        self.agent.load_models(os.path.join(self.save_dir, "Models", model_prefix))
         returns = []
         for i in tqdm(range(self.eval_episodes)):
             state, _ = self.env.reset()
