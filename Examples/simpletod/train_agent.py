@@ -22,6 +22,8 @@ parser.add_argument('--agent_name', default="Multi_PDQN", help="Prefix of output
 parser.add_argument('--cumulative', default=False, type=bool)
 parser.add_argument('--hybrid', default=True, type=bool)
 parser.add_argument('--rep', default=1, type=int)
+parser.add_argument('--save-freq', default=5, type=int)
+
 
 
      
@@ -29,7 +31,7 @@ args = parser.parse_args()
 
 env = DialogueSimulator(args.train_data_file, args.interface, args.hybrid, args.cumulative)
 agent = MultiPDQN(env.observation_space.spaces[0], env.action_space, args.top_k)
-trainer = RL_Trainer(env, agent, args.save_dir, args.episodes, args.evaluation_episodes, args.top_k, args.agent_name,rep=args.rep)
+trainer = RL_Trainer(env, agent, args.save_dir, args.episodes, args.evaluation_episodes, args.top_k, args.agent_name,rep=args.rep, save_freq= args.save_freq)
 trainer.train()
 env.set_data_file(args.test_data_file)
 trainer.evaluate()

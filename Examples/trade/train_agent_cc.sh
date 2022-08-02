@@ -22,3 +22,4 @@ python Examples/trade/train_agent.py \
  --cumulative False   \
  --hybrid True  \
  --rep 1  \
+  --save-freq 5 \

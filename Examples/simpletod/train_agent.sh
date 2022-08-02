@@ -11,3 +11,4 @@ python Examples/simpletod/train_agent.py \
  --cumulative False   \
  --hybrid True  \
  --rep 1  \
+  --save_freq 5 \

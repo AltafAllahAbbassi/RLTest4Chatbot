@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 
 class RL_Trainer():
-    def __init__(self, environement, agent, save_dir, episodes, eval_episodes, top_k, agent_name, seed = 0, display_freq = 100, rep = 1):
+    def __init__(self, environement, agent, save_dir, episodes, eval_episodes, top_k, agent_name, seed = 0, display_freq = 10, rep = 1, save_freq = 500):
         self.env = environement
         self.agent = agent 
         self.top_k = top_k
@@ -16,17 +16,22 @@ class RL_Trainer():
         self.env.seed(self.seed)
         self.episodes = episodes
         self.eval_episodes = eval_episodes
-        self.display_freq = self.episodes//100 +1
+        self.display_freq = display_freq
+        self.save_freq = save_freq
         self.save_dir = save_dir
         self.agent_name = agent_name
         self.rep = rep
-        self.model_prefix =  str(self.top_k) + "_" + self.agent_name + "_" + str(self.rep) + "_" + str(self.episodes) + "_"
+        self.model_prefix =  str(self.top_k) + "_" + self.agent_name + "_" + str(self.rep) + "_" 
 
     def train(self):
         total_reward = 0.
         returns = []
         start_time = time.time()
         for i in tqdm(range(self.episodes)):
+            if i % self.save_freq == 0:
+                model_prefix = self.model_prefix + str(i) + "_"
+                self.agent.save_models(os.path.join(self.save_dir, "Models", model_prefix))
+
             state, _ = self.env.reset()
             state = np.array(state, dtype=np.float32, copy=False)
             action = self.agent.act(state)
@@ -63,6 +68,7 @@ class RL_Trainer():
         end_time = time.time()
         print("Took %.2f seconds" % (end_time - start_time))
         self.env.close()
+        model_prefix = self.model_prefix +  str(self.episodes) + "_"
         self.agent.save_models(os.path.join(self.save_dir, "Models", self.model_prefix))
         print("Average return =", sum(returns) / len(returns))
 
