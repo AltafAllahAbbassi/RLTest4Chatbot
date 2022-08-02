@@ -359,8 +359,8 @@ class WordInsert(Transformer):
         self.upper_bound = self.get_upper_bound()
         self.emoji = EMOTICONS
         self.stop_words = stopwords.words('english')
-        self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-        self.model = BertForMaskedLM.from_pretrained('bert-base-uncased')
+        self.tokenizer = BertTokenizer.from_pretrained('/home/altaf/projects/def-foutsekh/altaf/projects/bert-base-uncased')
+        self.model = BertForMaskedLM.from_pretrained('/home/altaf/projects/def-foutsekh/altaf/projects/bert-base-uncased')
         self.n_trans = WORD_INSERT_N_TRANS
         self.valid_trans = WORD_INSERT_MAX_TRANS
 
