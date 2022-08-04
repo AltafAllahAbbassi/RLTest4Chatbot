@@ -69,3 +69,4 @@ RLTest4Chatbot.egg-info
 analysis.ipnyb
 .vscode
 .ipynb_checkpoints
+output.log
