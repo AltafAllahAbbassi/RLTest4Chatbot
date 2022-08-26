@@ -21,8 +21,7 @@ class ChatbotTester:
 
     def test_chatbot(self):
         result = []
-        for i in tqdm(range(3)):
-        # for i  in tqdm(range(len(self.dialogues))):    
+        for i  in tqdm(range(len(self.dialogues))):  
             start_t = time.time()
             index = self.dialogues[i] 
             dialogue = self.data_maps[index]

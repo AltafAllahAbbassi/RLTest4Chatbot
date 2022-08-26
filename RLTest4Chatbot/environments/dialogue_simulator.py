@@ -6,6 +6,7 @@ from RLTest4Chatbot.transformation.transformer import CompoundTransformer
 from Examples.MultiWOZ.util import build_dict
 import random
 import numpy as np
+import math
 
 class DialogueSimulator(Environment):
     """
@@ -24,7 +25,6 @@ class DialogueSimulator(Environment):
             self.cumulative = False
         else : 
             self.cumulative = cumulative
-
         self.interface = model_interface()
         self.data_file = data_file
         self.data_maps, _, self.dialogues = build_dict(self.data_file) 
@@ -60,7 +60,7 @@ class DialogueSimulator(Environment):
     def reset(self):
         state = [None] * STATE_ELEMENTS
         state[self.DIALOG_POS] = random.choice(
-            list(range(len(self.dialogues))))    # I don't know : the choice is random, keep it or change this
+            list(range(len(self.dialogues))))
         state[self.TURN_POS] = 0
         dialog_index = state[self.DIALOG_POS]
         dialog_id = self.dialogues[dialog_index]
@@ -89,8 +89,10 @@ class DialogueSimulator(Environment):
     def reward_func(self, ori_gini, new_gini, ori_transcript, new_transcript, trans_rate):
         diff_gini = math.exp(abs(new_gini-ori_gini))
         # modification_rate = calculate_modif_rate(ori_transcript, new_transcript)
-        beta = 0 if trans_rate<0.25 else -1000
-        reward = diff_gini/trans_rate + beta if trans_rate else diff_gini
+        word_rate, char_rate = trans_rate
+        beta = 0 if (word_rate<0.25 and char_rate <0.25 )else -1000
+        all_trans_rate = math.sqrt(word_rate*word_rate + char_rate*char_rate)
+        reward = diff_gini/all_trans_rate + beta if all_trans_rate else diff_gini
         return reward
 
     def calculate_reward(self, new_transcript, ori_transcript, trans_rate):  
@@ -117,7 +119,7 @@ class DialogueSimulator(Environment):
     def step(self, action):
         actions, all_params = action 
         all_params = np.clip(
-            all_params, a_min=np.zeros(self.action_parameter_size, dtype="float"), a_max=np.ones(self.action_parameter_size, dtype = "float"))
+            list(map(abs, all_params)), a_min=np.zeros(self.action_parameter_size, dtype="float"), a_max=np.ones(self.action_parameter_size, dtype = "float"))
         action = (actions, all_params)
         turn_idx = int(self.state[self.TURN_POS])
         transcript = self.dialogue["dialogue"][turn_idx]["transcript"]
@@ -141,19 +143,28 @@ class DialogueSimulator(Environment):
     def apply(self, action):
         actions, all_params = action
         all_params = np.clip(
-            all_params, a_min=np.zeros(self.action_parameter_size, dtype="float"), a_max=np.ones(self.action_parameter_size, dtype = "float"))
-
+            list(map(abs, all_params)), a_min=np.zeros(self.action_parameter_size, dtype="float"), a_max=np.ones(self.action_parameter_size, dtype = "float"))
         action = (actions, all_params)
         turn_idx = int(self.state[self.TURN_POS])
         ori_transcript = self.dialogue["dialogue"][turn_idx]["transcript"]
         ori_gini = self.interface.gini_query(self.dialogue, turn_idx, ori_transcript)
-        new_transcript, trans_rate = self.compound_transfomer.apply(ori_transcript, action)
+        new_transcript, edit_rate = self.compound_transfomer.apply(ori_transcript, action)
         dst_gini = self.interface.dst_gini_query(self.dialogue, turn_idx, new_transcript)
         new_dst = dst_gini["Prediction"]
         joint_acc = dst_gini["Joint Acc"]
         new_gini = dst_gini["Gini"]
-        reward = self.reward_func(ori_gini, new_gini, ori_transcript, new_transcript, trans_rate)
+        reward = self.reward_func(ori_gini, new_gini, ori_transcript, new_transcript, edit_rate)
         done = self.is_done()
         n_state = self.next_state()
         info = {}
-        return new_transcript, new_dst, reward, done, joint_acc,trans_rate, n_state, info
+        return new_transcript, new_dst, reward, done, joint_acc,edit_rate, n_state, info
+
+    
+    def apply_trans(self, transcript, action):
+        actions, all_params = action
+        all_params = np.clip(
+            list(map(abs, all_params)), a_min=np.zeros(self.action_parameter_size, dtype="float"), a_max=np.ones(self.action_parameter_size, dtype = "float"))
+        action = (actions, all_params)
+        new_transcript, trans_rate =self.compound_transfomer.apply(transcript, action)
+        return new_transcript, trans_rate
+

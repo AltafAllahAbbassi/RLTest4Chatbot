@@ -1,6 +1,7 @@
 import nltk
 from nltk.corpus import wordnet 
 import numpy as np
+import math
 from RLTest4Chatbot.transformation.constants import WORD_TAG_DICT
 from collections import defaultdict
 
@@ -78,6 +79,7 @@ def word_piece_insert(sentence, word_index, model, tokenizer):
 
 def word_drop(sentence, word_index):
     words = nltk.word_tokenize(sentence)
+    word_index = min(word_index, len(words)-1)
     words[word_index] = ""
     return " ".join(words)
 
@@ -256,14 +258,15 @@ def modif_rate_sen(sentence1, sentence2):
         modif = 0
     return modif
 
-
 def jaccard_modif_rate(word1, word2):
     word1_l = list(word1)
     word2_l = list(word2)
     shared = set(word1_l).intersection(word2_l)
+    if len(shared) == 0:
+        return 1
     union = set(word1_l).union(word2_l)
 
-    return 1-len(union)/(shared)
+    return 1-len(union)/len(shared)
 
 def nltk_modif(word1, word2):
     try :
@@ -276,3 +279,43 @@ def nltk_modif(word1, word2):
 
     return 1-sim
     
+
+
+def jaro_distance__(s1, s2, mm= 2):
+    if (s1 == s2):
+        return 0.0
+ 
+    len1 = len(s1)
+    len2 = len(s2)
+
+    max_dist = math.floor(max(len1, len2) / mm) - 1
+    match = 0
+    hash_s1 = [0] * len(s1)
+    hash_s2 = [0] * len(s2)
+    for i in range(len1):
+        for j in range(max(0, i - max_dist),
+                       min(len2, i + max_dist + 1)):             
+            if (s1[i] == s2[j] and hash_s2[j] == 0):
+                hash_s1[i] = 1
+                hash_s2[j] = 1
+                match += 1
+                break
+ 
+    if (match == 0):
+        return 0.0
+    t = 0
+    point = 0
+    for i in range(len1):
+        if (hash_s1[i]):
+            while (hash_s2[point] == 0):
+                point += 1
+ 
+            if (s1[i] != s2[point]):
+                t += 1
+            point += 1
+    t = t//2
+    
+    return 1-(match/ len1 + match / len2 +
+            (match - t) / match)/ 3.0
+
+

@@ -3,6 +3,7 @@ from Examples.trade.interface4trade import TradeInterface
 from RLTest4Chatbot.agents.multi_pdqn import MultiPDQN
 from RLTest4Chatbot.environments.dialogue_simulator import DialogueSimulator
 from RLTest4Chatbot.train_tester import RL_Trainer
+from RLTest4Chatbot.evaluate_tester import ChatbotTester
 from Examples.trade.constants import TRADE_TEST_21, TARDE_TRAIN_21
 
 
@@ -24,6 +25,9 @@ parser.add_argument('--cumulative', default= False, type=bool)
 parser.add_argument('--hybrid', default= True, type=bool)
 parser.add_argument('--rep', default=1, type=int)
 parser.add_argument('--save-freq', default=5, type=int)
+parser.add_argument("--display-freq", default=10, type=int )
+parser.add_argument("--do-eval", default=True, type=bool)
+parser.add_argument('--agent-name', default="Multi_PDQN", type=str)
 
 
 
@@ -42,5 +46,8 @@ env = DialogueSimulator(args.train_data_file, args.interface,args.hybrid, args.c
 agent = MultiPDQN(env.observation_space.spaces[0], env.action_space, args.top_k)
 trainer = RL_Trainer(env, agent, args.save_dir, args.episodes, args.evaluation_episodes, args.top_k, args.agent_name,rep=args.rep, save_freq=args.save_freq)
 trainer.train()
-env.set_data_file(args.test_data_file)
-trainer.evaluate()
+if args.do_eval : 
+    env = DialogueSimulator(args.test_data_file, args.interface,args.hybrid,  args.cumulative)
+    agent = MultiPDQN(env.observation_space.spaces[0], env.action_space, args.top_k)
+    chatbot_tester = ChatbotTester(env, agent, args.save_dir, args.top_k, args.test_data_file, args.agent_name, args.rep, args.episodes)
+    chatbot_tester.test_chatbot()

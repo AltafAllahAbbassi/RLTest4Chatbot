@@ -6,10 +6,11 @@ TURN_POS = 1
 
 DIALOG_POS = 0
 
-TRANSFORMATIONS = [ "wordinsert", "worddrop", "worddrop", "charinsert", "chardrop", "charreplace"]
+TRANSFORMATIONS = [ "wordinsert", "worddrop", "wordreplace", "charinsert", "chardrop", "charreplace"]
 
 
-VALID_RATE = 0.25 # I don't really know if right file/ right rate (because we will be having a valid rate per action)
+VALID_RATE = 0.25 
+
 
 
 """

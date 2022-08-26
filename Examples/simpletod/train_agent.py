@@ -12,8 +12,8 @@ assert TEST_VES == TRAIN_VES
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--top-k', default = 3, type=int)
-parser.add_argument('--evaluation_episodes', default = 10, help='Episodes over which to evaluate after training.', type=int)
-parser.add_argument('--episodes', default = 100, help='Number of epsiodes.', type=int) 
+parser.add_argument('--evaluation_episodes', default = 0, help='Episodes over which to evaluate after training.', type=int)
+parser.add_argument('--episodes', default = 1, help='Number of epsiodes.', type=int) 
 parser.add_argument('--save_dir', default="Examples/simpletod/Results/", help='Output directory.', type=str)
 parser.add_argument('--interface', default = SimpleTodInterface)
 parser.add_argument('--train-data-file', default = S_TOD_TRAIN_21, type=str) 

@@ -4,6 +4,8 @@ import numpy as np
 from RLTest4Chatbot.environments.dialogue_simulator import DialogueSimulator
 from RLTest4Chatbot.agents.utils.utils import get_random_actions, get_actions
 from RLTest4Chatbot.agents.pdqn import QActor, ParamActor, PDQNAgent
+import logging
+logging.basicConfig(filename='output.log'  , level=logging.INFO ,format="%(message)s")
 
 
 class MultiPDQN(PDQNAgent):
@@ -20,7 +22,7 @@ class MultiPDQN(PDQNAgent):
                                      'output_layer_init_std': 0.0001},
                  epsilon_initial=1.0,
                  epsilon_final=0.05,
-                 epsilon_steps=10000,
+                 epsilon_steps=1000,
                  batch_size=64,
                  gamma=0.9,
                  tau_actor=0.01,
@@ -28,7 +30,7 @@ class MultiPDQN(PDQNAgent):
                  replay_memory_size=10000,
                  learning_rate_actor=0.001,
                  learning_rate_actor_param=0.0001,
-                 initial_memory_threshold= 50,
+                 initial_memory_threshold= 500,
                  use_ornstein_noise=True,
                  loss_func=F.mse_loss,
                  clip_grad=10,
@@ -68,10 +70,9 @@ class MultiPDQN(PDQNAgent):
                          random_weighted=random_weighted,
                          device=device,
                          seed=seed)
-
         self.top_k = top_k
 
-    def act(self, state):
+    def act(self, state, logging_ = True):
         with torch.no_grad():
             state = torch.from_numpy(state).to(self.device)
             all_action_parameters = self.actor_param.forward(state)
@@ -79,10 +80,14 @@ class MultiPDQN(PDQNAgent):
             rnd = self.np_random.uniform()
             if rnd < self.epsilon:
                 actions = get_random_actions(self.num_actions, self.top_k)
+                if logging_:
+                    logging.info(f"Exploration")
                 if not self.use_ornstein_noise:
-                    all_action_parameters = torch.from_numpy(np.random.uniform(self.action_parameter_min_numpy,
-                                                                               self.action_parameter_max_numpy))
+                    all_action_parameters = torch.from_numpy(np.random.uniform(self.action_parameter_min_numpy,                                                               self.action_parameter_max_numpy))
+            
             else:
+                if logging_:
+                    logging.info(f"Exploitation")
                 Q_a = self.actor.forward(state.unsqueeze(
                     0), all_action_parameters.unsqueeze(0))
                 Q_a = Q_a.detach().cpu().data.numpy()
@@ -91,13 +96,14 @@ class MultiPDQN(PDQNAgent):
             all_action_parameters = all_action_parameters.cpu().data.numpy()
         return actions, all_action_parameters
 
-    def step(self, state, action, reward, next_state, next_action, terminal):
+    def step(self, state, action, reward, next_state, next_action, terminal, logging_ = True):
         self._step += 1
         self._add_sample(state, action, reward,
                          next_state, next_action, terminal)
         if self._step >= self.batch_size and self._step >= self.initial_memory_threshold:
             self._optimize_td_loss()
             self.updates += 1
+
 
     def _add_sample(self, state, action, reward, next_state, next_action, terminal):
         # assert len(action) == 1 + self.action_parameter_size

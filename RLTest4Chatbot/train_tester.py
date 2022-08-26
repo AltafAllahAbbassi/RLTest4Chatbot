@@ -24,7 +24,7 @@ class RL_Trainer():
         self.agent_name = agent_name
         self.rep = rep
         self.model_prefix =  str(self.top_k) + "_" + self.agent_name + "_" + str(self.rep) + "_" 
-
+        
     def train(self):
         total_reward = 0.
         returns = []
@@ -42,11 +42,21 @@ class RL_Trainer():
             episode_reward = 0.
             self.agent.start_episode()
             terminal = False
+            
+            if i % self.display_freq == 0:
+                logging.info(f"#################################")
+                logging.info(f"episode {i}")
             while not terminal:  
+
+                    turn_idx = int(self.env.state[self.env.TURN_POS])
+                    ori_transcript = self.env.dialogue["dialogue"][turn_idx]["transcript"]
+
                     ret = self.env.step(action)
                     next_state, reward, terminal, _ = ret
                     next_state = np.array(next_state, dtype=np.float32, copy=False)
                     next_action = self.agent.act(next_state)
+
+                    new_transcript, trans_rate = self.env.apply_trans(ori_transcript, action)
 
                     ac_n, p_n = next_action
                     n_action_store = [ac_n[2*i+1] for i in range(len(ac_n)//2)]
@@ -58,9 +68,18 @@ class RL_Trainer():
                     action_store = [np.argmax(action_store)]
                     action_store.extend(p_)
 
-                    self.agent.step(state, action_store, reward, next_state, n_action_store, terminal)
+                    self.agent.step(state, action_store, reward, next_state, n_action_store, terminal, i % self.display_freq and terminal)
                     state = next_state
                     episode_reward += reward
+                    epsilon = self.agent.epsilon
+                    logging.info(f"epsilon {epsilon}")
+                    logging.info(f"transcript: {ori_transcript}")
+                    logging.info(f"transcript transformed: {new_transcript}")
+                    logging.info(f"edit rate{trans_rate}" )
+                    logging.info(f"discrete actions {ac_n}")
+                    logging.info(f"parametric actions {p_n}")
+                    logging.info(f"state {state}")
+
                     if terminal:
                         break
             end_episode = time.time()
@@ -74,10 +93,8 @@ class RL_Trainer():
             if i % self.display_freq == 0:
                 print('{0:5s} R:{1:.4f} r:{2:.4f}'.format(str(i), total_reward / (i + 1), np.array(returns[-self.display_freq:]).mean()))
                 epsilon = self.agent.epsilon
-                logging.info(f"episode {i}")
-                logging.info(f"reward {reward}")
                 logging.info(f"execution time {epi_time}")
-                logging.info(f"epsilon steps {epsilon}")
+                logging.info(f"##########################################")
 
         end_time = time.time()
         print("Took %.2f seconds" % (end_time - start_time))

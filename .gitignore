@@ -57,16 +57,23 @@ Examples/simpletod/simpletod/baseline/checkpoint-825000
 Examples/simpletod/data
 Examples/simpletod/Results/Evaluation
 Examples/simpletod/Results/Models
+Examples/simpletod/Results/RandomSampler
+Examples/simpletod/Results/DRandomSampler
+Examples/simpletod/Results/baseline
+
+
 
 Examples/trade/data
 Examples/trade/Results/Evaluation/
 Examples/trade/Results/Models/
 Examples/trade/trade_dst/baseline/
 Examples/trade/trade_dst/data/
-
+Examples/trade/Results/RandomSampler
+Examples/trade/Results/DRandomSampler
+Examples/trade/Results/baseline
 
 RLTest4Chatbot.egg-info
 analysis.ipnyb
 .vscode
 .ipynb_checkpoints
-output.log
+*.log
