@@ -79,6 +79,8 @@ def word_piece_insert(sentence, word_index, model, tokenizer):
 
 def word_drop(sentence, word_index):
     words = nltk.word_tokenize(sentence)
+    if len(words) == 0:
+        return sentence
     word_index = min(word_index, len(words)-1)
     words[word_index] = ""
     return " ".join(words)

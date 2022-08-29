@@ -733,7 +733,10 @@ class CompoundTransformer(Transformer):
                     n_word += n
                 else:
                     sentence = transform.apply(sentence, active_params)
-        word_edit_rate = n_word/len(nltk.word_tokenize(sentence_))
+        if len(nltk.word_tokenize(sentence_)):
+            word_edit_rate = n_word/len(nltk.word_tokenize(sentence_))
+        else :
+            word_edit_rate = 1
         logging.info(f"intermediate {sentence_c}")
         char_edit_rate = jaro_distance__(sentence_c, sentence)
         return sentence, (word_edit_rate, char_edit_rate)

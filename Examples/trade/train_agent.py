@@ -33,7 +33,7 @@ parser.add_argument('--agent-name', default="Multi_PDQN", type=str)
 
      
 args = parser.parse_args()
-## add top-k assertion
+# top-k assertion
 top_k = args.top_k
 try : 
     assert top_k> 0 and top_k <=6 
@@ -46,8 +46,12 @@ env = DialogueSimulator(args.train_data_file, args.interface,args.hybrid, args.c
 agent = MultiPDQN(env.observation_space.spaces[0], env.action_space, args.top_k)
 trainer = RL_Trainer(env, agent, args.save_dir, args.episodes, args.evaluation_episodes, args.top_k, args.agent_name,rep=args.rep, save_freq=args.save_freq)
 trainer.train()
-if args.do_eval : 
+
+if args.do_eval and args.episodes == 1000:
+    episodes = [1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000]
     env = DialogueSimulator(args.test_data_file, args.interface,args.hybrid,  args.cumulative)
     agent = MultiPDQN(env.observation_space.spaces[0], env.action_space, args.top_k)
-    chatbot_tester = ChatbotTester(env, agent, args.save_dir, args.top_k, args.test_data_file, args.agent_name, args.rep, args.episodes)
-    chatbot_tester.test_chatbot()
+    for p in episodes:
+        chatbot_tester = ChatbotTester(env, agent, args.save_dir, args.top_k, args.test_data_file, args.agent_name, args.rep, p)
+        chatbot_tester.test_chatbot()
+
